@@ -1,0 +1,782 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#F3EADB">
+<title>Cafe Coup — Menu</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Amiri:wght@700&family=Lalezar&family=Tajawal:wght@500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F3EADB; --ink:#3B2418; --line:rgba(59,36,24,.16); --cream:#F3EADB;
+  --font:"Lalezar","Tajawal",system-ui,sans-serif;   /* خط واحد لكل الكلمات */
+}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;background:var(--bg);color:var(--ink);font-family:var(--font);-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit;cursor:pointer}
+:focus-visible{outline:2px solid #8A5A3B;outline-offset:3px;border-radius:999px}
+
+/* الشريط العلوي: اللغة يساراً، الشعار في المنتصف، العملة يميناً (ثابت في الاتجاهين) */
+.topbar{direction:ltr;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;
+  padding:max(14px, env(safe-area-inset-top)) 16px 6px;max-width:1200px;margin:0 auto}
+.brand{display:block;line-height:0}
+.brand img{display:block;height:44px;width:auto}
+@media (min-width:640px){ .brand img{height:56px} }
+.lang{justify-self:start;display:inline-flex;border:1px solid var(--ink);border-radius:999px;padding:3px;gap:2px}
+.lang button{border:0;background:none;border-radius:999px;padding:6px 12px 4px;font-size:15px;line-height:1;transition:background .3s,color .3s}
+.lang button[aria-pressed=true]{background:var(--ink);color:var(--bg)}
+.lang button[data-lang=fr]{letter-spacing:.05em}
+.currency{justify-self:end;font-size:15px;letter-spacing:.15em;line-height:1;border:1px solid var(--line);border-radius:999px;padding:8px 12px 6px}
+
+/* الأقسام: ثلاث مساحات متساوية، يسار طعام · وسط مشروبات · يمين ألعاب (ثابتة في اللغتين) */
+.sections{direction:ltr;display:grid;grid-template-columns:repeat(3,1fr);align-items:center;
+  max-width:720px;margin:22px auto 0;padding:0 16px}
+.sec{justify-self:center;position:relative;border:0;background:none;padding:8px 22px 4px;
+  font-size:24px;line-height:1.3;color:var(--ink);-webkit-tap-highlight-color:transparent}
+/* الإطار الدائري: مخفي، يظهر فقط حول القسم المختار */
+.sec::before{content:"";position:absolute;inset:0;border:1.5px solid var(--ink);border-radius:999px;
+  opacity:0;transform:scale(.8);transition:opacity .35s cubic-bezier(.2,.8,.2,1), transform .45s cubic-bezier(.2,.8,.2,1)}
+.sec[aria-pressed=true]::before{opacity:1;transform:scale(1)}
+.sec:active{transform:scale(.97)}
+.sec:focus-visible{outline:none}
+.sec:focus-visible::before{opacity:.5;transform:scale(1)}
+@media (min-width:640px){ .sec{font-size:28px} }
+
+/* منطقة العرض: الطبق في الخلف، والمشروبات تطفو فوقه وتنزلق أفقياً */
+:root{
+  --plate:min(98vw, 540px);                 /* قطر الطبق */
+  --iw:calc(var(--plate) * .34);            /* عرض الكوب */
+  --ih:calc(var(--iw) * 1.36);              /* ارتفاع الكوب */
+  --ease:cubic-bezier(.2,.8,.2,1);
+}
+.stage{position:relative;height:calc(var(--plate) + 120px);margin-top:4px;overflow:hidden;
+  touch-action:pan-y;user-select:none;-webkit-user-select:none}
+.plate{position:absolute;left:50%;top:calc(50% - 14px);width:var(--plate);height:var(--plate);
+  margin:calc(var(--plate) / -2) 0 0 calc(var(--plate) / -2);border-radius:50%;pointer-events:none;
+  filter:drop-shadow(0 26px 22px rgba(40,20,8,.32)) drop-shadow(0 6px 8px rgba(40,20,8,.18))}
+.track{position:absolute;inset:0}
+/* الطعام أعرض من الأكواب: إطار أعرض وأقصر حتى يملأ الطبق */
+.stage[data-section=food]{--iw:calc(var(--plate) * .51);--ih:calc(var(--iw) * .9)}
+/* الألعاب أشكالها مختلفة (برج طويل، علبة عريضة): إطار مربع */
+.stage[data-section=games]{--iw:calc(var(--plate) * .44);--ih:var(--iw)}
+.item{position:absolute;left:calc(50% - var(--iw) / 2);top:calc(50% - var(--ih) / 2 - 18px);width:var(--iw);height:var(--ih);
+  padding:0;border:0;background:none;border-radius:24px;-webkit-tap-highlight-color:transparent;
+  transition:transform .65s var(--ease), opacity .65s var(--ease);will-change:transform,opacity}
+.item[aria-hidden=true]{pointer-events:none}
+.item:focus-visible{outline-offset:-4px;border-radius:24px}
+.pop{position:absolute;inset:0;animation:popIn .8s var(--ease) both}
+@keyframes popIn{from{opacity:0;transform:translateY(40px) scale(.85) rotate(6deg)}}
+.float{position:absolute;inset:0;animation:floatY 5s ease-in-out infinite}
+.float img{width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 16px 16px rgba(30,14,6,.35));pointer-events:none;-webkit-user-drag:none}
+.shadow{position:absolute;left:22%;right:22%;bottom:-4%;height:16px;border-radius:50%;
+  background:radial-gradient(closest-side, rgba(25,12,5,.5), transparent);animation:shadowY 5s ease-in-out infinite}
+@keyframes floatY{0%,100%{transform:translateY(0)}50%{transform:translateY(-14px)}}
+@keyframes shadowY{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(.78);opacity:.55}}
+
+/* أسهم + عدّاد */
+.controls{display:flex;align-items:center;justify-content:center;gap:18px;margin-top:-34px;position:relative;z-index:10}
+.arrow{width:46px;height:46px;border-radius:50%;border:1px solid var(--ink);background:transparent;display:grid;place-items:center;
+  transition:background .3s,color .3s,opacity .3s,transform .2s}
+.arrow:hover:not(:disabled){background:var(--ink);color:var(--bg)}
+.arrow:active:not(:disabled){transform:scale(.92)}
+.arrow:disabled{opacity:.25;cursor:default}
+.arrow svg{width:18px;height:18px}
+[dir=rtl] .arrow svg{transform:scaleX(-1)}
+.count{font-size:16px;letter-spacing:.15em;min-width:70px;text-align:center;color:#8A5A3B}
+.count b{color:var(--ink);font-weight:400}
+.controls[hidden]{display:none}
+
+/* معلومات المشروب: بدون إطار */
+.info{width:min(440px, calc(100% - 32px));margin:12px auto 44px;text-align:center}
+.info-inner{transition:opacity .3s var(--ease), transform .45s var(--ease)}
+.info.swap .info-inner{opacity:0;transform:translateY(12px)}
+.p-name{margin:0;font-weight:400;font-size:32px;line-height:1.2}
+.p-alt{margin:2px 0 0;font-family:"Amiri",serif;font-weight:700;font-size:17px;color:#8A5A3B}
+.p-desc{margin:6px 0 0;font-family:"Tajawal",sans-serif;font-weight:500;font-size:15px;line-height:1.6;color:rgba(59,36,24,.72)}
+.p-price{margin-top:6px;display:flex;justify-content:center;align-items:baseline;gap:8px}
+.p-price .amt{font-size:34px;line-height:1}
+.p-price .cur{font-size:15px;letter-spacing:.15em;color:#8A5A3B}
+.p-price:empty{display:none}
+/* الألعاب: سعر واحد للشخص بدل سعر لكل لعبة */
+.p-note{margin:4px 0 0;font-family:"Tajawal",sans-serif;font-weight:500;font-size:14px;color:#8A5A3B}
+.p-note:empty{display:none}
+
+/* زر الطلب تحت السعر */
+.add{margin-top:14px;display:inline-flex;align-items:center;gap:8px;border:0;background:var(--ink);color:var(--bg);
+  border-radius:999px;padding:12px 24px 9px;font-size:18px;line-height:1;transition:transform .2s, background .3s}
+.add:active{transform:scale(.96)}
+.add svg{width:15px;height:15px;margin-top:-3px}
+.add.done{background:#5E7F3A}
+.add[hidden]{display:none}
+
+/* القائمة السريعة: كل أصناف القسم بالصورة والاسم والسعر */
+.quick{max-width:1080px;margin:0 auto;padding:0 16px 130px}
+.quick h3{display:flex;align-items:center;gap:12px;margin:0 0 14px;font-weight:400;font-size:22px}
+.quick h3::after{content:"";flex:1;height:1px;background:var(--line)}
+.quick .pass{margin:-6px 0 14px;font-family:"Tajawal",sans-serif;font-weight:500;font-size:14px;color:#8A5A3B}
+.quick .pass:empty{display:none}
+.qgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
+@media (min-width:640px){ .qgrid{grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:16px} }
+.tile{position:relative;background:#FFF8EE;border:1px solid var(--line);border-radius:20px;transition:border-color .3s, box-shadow .35s, transform .35s var(--ease)}
+.tile:hover{transform:translateY(-2px);box-shadow:0 14px 30px -18px rgba(59,36,24,.45)}
+.tile[aria-current=true]{border-color:var(--ink);box-shadow:0 0 0 1px var(--ink)}
+.tile .show{display:flex;flex-direction:column;align-items:center;gap:4px;width:100%;border:0;background:none;padding:16px 10px 12px;border-radius:20px;text-align:center}
+.tile .thumb{height:96px;width:100%;display:grid;place-items:center}
+.tile .thumb img{max-height:96px;max-width:100%;object-fit:contain;filter:drop-shadow(0 8px 8px rgba(30,14,6,.18))}
+.tile .t-name{font-size:17px;line-height:1.25}
+.tile .t-price{font-size:16px;color:#8A5A3B}
+.tile .t-price span{font-size:11px;letter-spacing:.12em;margin-inline-start:4px}
+.tile .plus{position:absolute;top:8px;inset-inline-end:8px;width:34px;height:34px;border-radius:50%;border:0;
+  background:var(--ink);color:var(--bg);display:grid;place-items:center;transition:transform .2s}
+.tile .plus:active{transform:scale(.9)}
+.tile .plus svg{width:14px;height:14px}
+.tile .badge{position:absolute;top:10px;inset-inline-start:10px;min-width:26px;height:26px;border-radius:999px;padding:3px 7px 0;
+  background:#C9A27E;color:var(--ink);font-size:15px;line-height:23px;text-align:center}
+
+/* شريط الطلب الثابت أسفل الشاشة */
+.cartbar{position:fixed;left:50%;bottom:max(16px, env(safe-area-inset-bottom));z-index:50;
+  display:flex;align-items:center;gap:12px;width:min(440px, calc(100% - 32px));
+  background:var(--ink);color:var(--bg);border:0;border-radius:999px;padding:9px 22px 9px 9px;
+  box-shadow:0 18px 40px -12px rgba(30,14,6,.55);transform:translate(-50%, 160%);transition:transform .5s var(--ease)}
+[dir=rtl] .cartbar{padding:9px 9px 9px 22px}
+.cartbar.show{transform:translate(-50%, 0)}
+.cartbar.bump{animation:bump .45s var(--ease)}
+@keyframes bump{40%{transform:translate(-50%, -8px) scale(1.03)}}
+.cb-count{min-width:38px;height:38px;border-radius:999px;background:var(--bg);color:var(--ink);font-size:18px;line-height:41px;padding:0 8px;text-align:center}
+.cb-label{flex:1;text-align:start;font-size:19px;line-height:1}
+.cb-total{font-size:19px;line-height:1}
+
+/* نافذة الطلب (تنزلق من الأسفل) */
+.sheet-back{position:fixed;inset:0;z-index:60;background:rgba(30,14,6,.45);opacity:0;visibility:hidden;transition:opacity .3s, visibility .3s}
+.sheet-back.open{opacity:1;visibility:visible}
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:61;max-width:560px;margin:0 auto;max-height:88vh;display:flex;flex-direction:column;
+  background:var(--bg);border-radius:28px 28px 0 0;padding:8px 18px max(18px, env(safe-area-inset-bottom));
+  transform:translateY(105%);transition:transform .45s var(--ease);visibility:hidden}
+.sheet.open{transform:none;visibility:visible}
+.grab{width:44px;height:5px;border-radius:5px;background:var(--line);margin:4px auto 8px}
+.sheet-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.sheet-head h2{margin:0;font-weight:400;font-size:30px}
+.x{width:40px;height:40px;border-radius:50%;border:1px solid var(--line);background:none;display:grid;place-items:center}
+.x svg{width:16px;height:16px}
+.table{display:flex;align-items:center;gap:10px;margin:10px 0 4px;font-family:"Tajawal",sans-serif;font-weight:500;font-size:15px;color:#8A5A3B}
+.table input{width:84px;border:1px solid var(--line);border-radius:12px;background:#FFF8EE;padding:8px 10px;font:inherit;font-size:17px;color:var(--ink);text-align:center}
+.lines{list-style:none;margin:6px 0 0;padding:0;overflow:auto;flex:1;min-height:0}
+.line{display:grid;grid-template-columns:48px 1fr auto;gap:10px 12px;align-items:center;padding:10px 0;border-bottom:1px dashed var(--line)}
+.line img{width:48px;height:48px;object-fit:contain}
+.l-name{font-size:18px;line-height:1.2}
+.l-sub{display:block;font-family:"Tajawal",sans-serif;font-weight:500;font-size:13px;color:#8A5A3B;margin-top:2px}
+.l-end{display:flex;flex-direction:column;align-items:flex-end;gap:6px}
+.stepper{display:flex;align-items:center;gap:6px;direction:ltr}
+.stepper button{width:32px;height:32px;border-radius:50%;border:1px solid var(--ink);background:none;display:grid;place-items:center;padding:0}
+.stepper button svg{width:12px;height:12px}
+.stepper output{min-width:24px;text-align:center;font-size:18px;line-height:1;padding-top:3px}
+.l-total{font-size:16px;color:var(--ink)}
+.empty{padding:28px 0;text-align:center;font-family:"Tajawal",sans-serif;font-weight:500;color:#8A5A3B}
+.sum{display:flex;justify-content:space-between;align-items:baseline;padding:14px 0 4px;font-size:22px}
+.sum .amt{font-size:34px}
+.sum .cur{font-size:14px;letter-spacing:.15em;color:#8A5A3B;margin-inline-start:6px}
+.sheet-actions{display:grid;gap:10px;margin-top:8px}
+.btn-main{border:0;border-radius:999px;background:var(--ink);color:var(--bg);padding:15px 20px 12px;font-size:20px;line-height:1}
+.btn-main:disabled{opacity:.35}
+/* إرسال الطلب إلى واتساب المقهى */
+.btn-wa{display:flex;align-items:center;justify-content:center;gap:10px;border:0;border-radius:999px;background:#25D366;color:#0B3B1E;
+  padding:14px 20px 11px;font-size:20px;line-height:1;transition:transform .2s, filter .3s}
+.btn-wa:hover{filter:brightness(1.05)}
+.btn-wa:active{transform:scale(.97)}
+.btn-wa svg{width:22px;height:22px;margin-top:-3px}
+.btn-wa[hidden]{display:none}
+.btn-link{border:0;background:none;color:#8A5A3B;padding:6px 10px 2px;font-size:15px;line-height:1;text-decoration:underline;text-underline-offset:4px;justify-self:center}
+
+/* شاشة النادل: كبيرة وواضحة */
+.waiter{position:fixed;inset:0;z-index:70;background:#FFF8EE;overflow:auto;padding:max(18px, env(safe-area-inset-top)) 20px 28px;
+  opacity:0;visibility:hidden;transition:opacity .3s, visibility .3s}
+.waiter.open{opacity:1;visibility:visible}
+.w-wrap{max-width:560px;margin:0 auto}
+.w-top{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.w-top img{height:40px}
+.w-meta{text-align:center;margin:18px 0 10px}
+.w-meta h2{margin:0;font-weight:400;font-size:34px}
+.w-meta p{margin:4px 0 0;font-family:"Tajawal",sans-serif;font-weight:500;font-size:16px;color:#8A5A3B}
+.w-table{display:inline-block;margin-top:10px;border:2px solid var(--ink);border-radius:16px;padding:8px 18px 4px;font-size:26px}
+.w-lines{list-style:none;margin:10px 0 0;padding:0}
+.w-line{display:grid;grid-template-columns:auto 1fr auto;gap:14px;align-items:baseline;padding:14px 0;border-bottom:1.5px dashed var(--line)}
+.w-q{font-size:30px;min-width:52px}
+.w-n{font-size:24px;line-height:1.2}
+.w-n small{display:block;font-family:"Amiri",serif;font-weight:700;font-size:16px;color:#8A5A3B;margin-top:2px}
+.w-p{font-size:22px}
+.w-sum{display:flex;justify-content:space-between;align-items:baseline;margin-top:18px;padding-top:14px;border-top:2px solid var(--ink);font-size:26px}
+.w-sum .amt{font-size:46px}
+.spin{position:relative;width:100%;height:100%;animation:plateSpin 40s linear infinite;will-change:transform}
+.spin img{display:block;width:100%;height:100%;border-radius:50%}
+/* direction:ltr ضروري: في الصفحة العربية (rtl) كانت الكتابة تبدأ خارج الدائرة فلا تظهر */
+.rim{position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none;direction:ltr}
+/* كتابة الحافة: خط نسخ ناعم (Amiri) مع مدّ طويل للحروف (كشيدة) */
+.rim text{font-family:"Amiri",var(--font);font-weight:700;fill:var(--cream);opacity:.95}
+@keyframes plateSpin{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){
+  .spin,.float,.shadow,.pop{animation:none}
+  .item{transition:opacity .2s linear, transform .01s linear}
+  .info-inner{transition:opacity .15s linear}
+  .cartbar,.sheet{transition:none} .cartbar.bump{animation:none}
+}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="lang" role="group" aria-label="Language / اللغة">
+    <button type="button" data-lang="ar" aria-pressed="true" lang="ar">عربي</button>
+    <button type="button" data-lang="fr" aria-pressed="false" lang="fr">FR</button>
+  </div>
+  <a class="brand" href="#" aria-label="Cafe Coup"><img src="images/logo-coup.png" alt="Cafe Coup"></a>
+  <div class="currency" aria-label="Currency">MRU</div>
+</header>
+
+<nav class="sections" aria-label="الأقسام / Sections">
+  <button type="button" class="sec" data-sec="food" data-ar="طعام" data-fr="Plats" aria-pressed="false"></button>
+  <button type="button" class="sec" data-sec="drinks" data-ar="مشروبات" data-fr="Boissons" aria-pressed="true"></button>
+  <button type="button" class="sec" data-sec="games" data-ar="ألعاب" data-fr="Jeux" aria-pressed="false"></button>
+</nav>
+
+<section class="stage" id="stage" aria-roledescription="carousel" aria-label="Menu">
+  <div class="plate">
+    <div class="spin">
+      <img src="images/plate.png" alt="" aria-hidden="true">
+      <!-- الكتابة الدائرية على حافة الطبق، تدور معه -->
+      <svg class="rim" viewBox="0 0 500 500" aria-hidden="true">
+        <defs><path id="rimPath" d="M250,250 m-212,0 a212,212 0 1,1 424,0 a212,212 0 1,1 -424,0"/></defs>
+        <text id="rimText" direction="ltr" text-anchor="start" dominant-baseline="central"><textPath href="#rimPath" id="rimTP"></textPath></text>
+      </svg>
+    </div>
+  </div>
+  <div class="track" id="track"></div>
+</section>
+
+<div class="controls" id="controls">
+  <button class="arrow" id="prev" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
+  <div class="count" id="count" dir="ltr" aria-hidden="true"></div>
+  <button class="arrow" id="next" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
+</div>
+
+<article class="info" id="info" aria-live="polite">
+  <div class="info-inner">
+    <h2 class="p-name" id="pName"></h2>
+    <p class="p-alt" id="pAlt"></p>
+    <p class="p-desc" id="pDesc"></p>
+    <div class="p-price" id="pPrice"></div>
+    <p class="p-note" id="pNote"></p>
+    <button class="add" id="addBtn" type="button">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+      <span id="addLabel"></span>
+    </button>
+  </div>
+</article>
+
+<!-- كل أصناف القسم الحالي -->
+<section class="quick" aria-labelledby="quickTitle">
+  <h3 id="quickTitle"></h3>
+  <p class="pass" id="quickPass"></p>
+  <div class="qgrid" id="qgrid"></div>
+</section>
+
+<!-- شريط الطلب: يظهر عند إضافة أول صنف -->
+<button class="cartbar" id="cartbar" type="button" aria-haspopup="dialog">
+  <span class="cb-count" id="cbCount">0</span>
+  <span class="cb-label" id="cbLabel"></span>
+  <span class="cb-total" id="cbTotal"></span>
+</button>
+
+<!-- نافذة الطلب -->
+<div class="sheet-back" id="sheetBack"></div>
+<div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
+  <div class="grab" aria-hidden="true"></div>
+  <div class="sheet-head">
+    <h2 id="sheetTitle"></h2>
+    <button class="x" id="sheetClose" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+  </div>
+  <label class="table"><span id="tableLabel"></span><input id="tableInput" inputmode="numeric" maxlength="4" autocomplete="off"></label>
+  <ul class="lines" id="lines"></ul>
+  <div class="sum"><span id="sumLabel"></span><span><bdi class="amt" id="sumAmt">0</bdi><span class="cur">MRU</span></span></div>
+  <div class="sheet-actions">
+    <button class="btn-main" id="showWaiter" type="button"></button>
+    <button class="btn-wa" id="sendWa" type="button">
+      <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm0 18.2a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1l-.8 1c-.1.2-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.3-.4.2-.4.7-1.4.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.7 11.8 11.8 0 0 0 4.5 4c1.7.7 2.4.8 3.2.6.5-.1 1.5-.6 1.8-1.2.2-.6.2-1.1.1-1.2l-.5-.2z"/></svg>
+      <span id="sendWaLabel"></span>
+    </button>
+    <button class="btn-link" id="clearOrder" type="button"></button>
+  </div>
+</div>
+
+<!-- شاشة النادل -->
+<div class="waiter" id="waiter" role="dialog" aria-modal="true" aria-labelledby="wTitle">
+  <div class="w-wrap">
+    <div class="w-top">
+      <img src="images/logo-coup.png" alt="Cafe Coup">
+      <button class="x" id="waiterClose" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    </div>
+    <div class="w-meta">
+      <h2 id="wTitle"></h2>
+      <p id="wTime"></p>
+      <div class="w-table" id="wTable"></div>
+    </div>
+    <ul class="w-lines" id="wLines"></ul>
+    <div class="w-sum"><span id="wSumLabel"></span><span><bdi class="amt" id="wSum">0</bdi> MRU</span></div>
+  </div>
+</div>
+
+<script>
+/* ═══ المنيو — عدّل الأسماء والأسعار والصور من هنا ═══
+   image: صورة PNG بخلفية شفافة داخل مجلد images */
+const MENU = [
+  { id:"iced-latte", section:"drinks", name_ar:"آيس لاتيه", name_fr:"Latte glacé",
+    desc_ar:"إسبريسو مزدوج مع حليب بارد وثلج", desc_fr:"Double espresso, lait frais et glaçons", price:120, image:"images/iced-latte.png" },
+  { id:"iced-mocha", section:"drinks", name_ar:"آيس موكا", name_fr:"Moka glacé",
+    desc_ar:"شوكولاتة داكنة، إسبريسو وحليب بارد", desc_fr:"Chocolat noir, espresso et lait froid", price:140, image:"images/iced-mocha.png" },
+  { id:"iced-americano", section:"drinks", name_ar:"آيس أمريكانو", name_fr:"Americano glacé",
+    desc_ar:"إسبريسو مركّز مع ماء بارد وثلج", desc_fr:"Espresso allongé sur glace", price:100, image:"images/iced-americano.png" },
+  { id:"mojito", section:"drinks", name_ar:"موهيتو", name_fr:"Mojito",
+    desc_ar:"نعناع طازج، ليمون أخضر وصودا", desc_fr:"Menthe fraîche, citron vert et soda", price:110, image:"images/mojito.png" },
+  { id:"blue-lemonade", section:"drinks", name_ar:"ليموناضة زرقاء", name_fr:"Limonade bleue",
+    desc_ar:"ليمون، توت أزرق وصودا منعشة", desc_fr:"Citron, myrtilles et soda pétillant", price:120, image:"images/blue-lemonade.png" },
+  { id:"mango", section:"drinks", name_ar:"عصير مانجو", name_fr:"Jus de mangue",
+    desc_ar:"مانجو طازجة مخفوقة مع قطع الفاكهة", desc_fr:"Mangue fraîche mixée, morceaux de fruit", price:100, image:"images/mango.png" },
+  { id:"banana-milk", section:"drinks", name_ar:"حليب بالموز", name_fr:"Lait banane",
+    desc_ar:"موز طازج مخفوق مع الحليب البارد", desc_fr:"Banane fraîche mixée au lait froid", price:90, image:"images/banana-milk.png" },
+
+  // ── الطعام ──
+  { id:"chocolate-cake", section:"food", name_ar:"كيك الشوكولاتة", name_fr:"Gâteau au chocolat",
+    desc_ar:"ثلاث طبقات من الكيك مع كريمة الشوكولاتة", desc_fr:"Trois couches de gâteau, crème au chocolat", price:150, image:"images/chocolate-cake.png" },
+  { id:"chicken-wrap", section:"food", name_ar:"راب الدجاج", name_fr:"Wrap au poulet",
+    desc_ar:"دجاج، بطاطس وصوص في خبز تورتيلا مشوي", desc_fr:"Poulet, frites et sauce dans une tortilla grillée", price:180, image:"images/chicken-wrap.png" },
+  { id:"club-sandwich", section:"food", name_ar:"كلوب ساندويتش", name_fr:"Club sandwich",
+    desc_ar:"خبز محمّص، جبن، طماطم وخس", desc_fr:"Pain toasté, fromage, tomate et salade", price:200, image:"images/club-sandwich.png" },
+
+  // ── الألعاب ──
+  { id:"uno", section:"games", name_ar:"أونو", name_fr:"UNO",
+    desc_ar:"لعبة الورق الملوّنة، من 2 إلى 10 لاعبين", desc_fr:"Le jeu de cartes coloré, de 2 à 10 joueurs", image:"images/uno.png" },
+  { id:"monopoly", section:"games", name_ar:"مونوبولي", name_fr:"Monopoly",
+    desc_ar:"اشترِ وبِع العقارات وكُن الأغنى", desc_fr:"Achetez, vendez et devenez le plus riche", image:"images/monopoly.png" },
+  { id:"jenga", section:"games", name_ar:"برج الخشب", name_fr:"Tour en bois",
+    desc_ar:"اسحب القطعة دون أن يسقط البرج", desc_fr:"Retirez un bloc sans faire tomber la tour", image:"images/jenga.png" },
+  { id:"chess", section:"games", name_ar:"شطرنج", name_fr:"Échecs",
+    desc_ar:"مباراة هادئة بين لاعبَين", desc_fr:"Une partie tranquille à deux", image:"images/chess.png" },
+  { id:"hedbanz", section:"games", name_ar:"هيدبانز", name_fr:"Hedbanz",
+    desc_ar:"خمّن ما على رأسك بالأسئلة", desc_fr:"Devinez ce qui est sur votre tête", image:"images/hedbanz.png" },
+  { id:"cockroach-poker", section:"games", name_ar:"بوكر الصراصير", name_fr:"Poker des cafards",
+    desc_ar:"خادِع خصمك بالبطاقات واكشف من يكذب", desc_fr:"Bluffez avec vos cartes et démasquez les menteurs", image:"images/cockroach-poker.png" },
+  { id:"loups-garous", section:"games", name_ar:"المستذئبون", name_fr:"Loups-Garous",
+    desc_ar:"لعبة جماعية: اكتشف المستذئبين بين اللاعبين", desc_fr:"Jeu de groupe : démasquez les loups-garous", image:"images/loups-garous.png" },
+  { id:"coup-game", section:"games", name_ar:"كو", name_fr:"Coup",
+    desc_ar:"هويات سرية، خداع وذكاء", desc_fr:"Identités secrètes, bluff et déduction", image:"images/coup-game.png" },
+  { id:"playing-cards", section:"games", name_ar:"ورق اللعب", name_fr:"Cartes à jouer",
+    desc_ar:"كوتشينة كلاسيكية لكل ألعابك المفضّلة", desc_fr:"Un jeu de cartes classique pour toutes vos parties", image:"images/playing-cards.png" },
+];
+const CURRENCY = "MRU";
+// رقم واتساب المقهى (بالصيغة الدولية، أرقام فقط) — إليه تُرسل الطلبات
+const WHATSAPP = "22234522229";
+// الألعاب: لا سعر لكل لعبة. سعر واحد للشخص، والعب ما تشاء بوقت مفتوح
+const GAMES_PASS = { price: 200,
+  ar: "للشخص · العب كل الألعاب التي تريدها بوقت مفتوح",
+  fr: "par personne · tous les jeux à volonté, sans limite de temps" };
+const priceOf = q => q.section === "games" ? GAMES_PASS.price : q.price;
+const SOON = { ar: "قريباً", fr: "Bientôt" };
+
+// نصوص الطلب بكل لغة
+const T = {
+  ar: { add:"أضف إلى الطلب", addGame:"أضف شخصاً للعب", added:"أُضيف ✓", myOrder:"طلبي", total:"المجموع",
+        showWaiter:"اعرض الطلب للنادل", clear:"إفراغ الطلب", confirmClear:"هل تريد إفراغ الطلب كله؟", empty:"طلبك فارغ. اضغط «أضف إلى الطلب» تحت أي صنف.",
+        table:"رقم الطاولة", close:"إغلاق", waiterTitle:"طلب جديد", tableShort:"طاولة", all:"كل الأصناف", addOne:"أضف", less:"أنقص",
+        persons:"شخص", each:"للواحد", sections:{ drinks:"المشروبات", food:"الطعام", games:"الألعاب" },
+        sendWa:"إرسال الطلب عبر واتساب", waHello:"مرحباً، أريد أن أطلب:" },
+  fr: { add:"Ajouter à la commande", addGame:"Ajouter un joueur", added:"Ajouté ✓", myOrder:"Ma commande", total:"Total",
+        showWaiter:"Montrer au serveur", clear:"Vider la commande", confirmClear:"Vider toute la commande ?", empty:"Votre commande est vide. Touchez « Ajouter à la commande » sous un article.",
+        table:"Numéro de table", close:"Fermer", waiterTitle:"Nouvelle commande", tableShort:"Table", all:"Tous les articles", addOne:"Ajouter", less:"Retirer",
+        persons:"pers.", each:"l'unité", sections:{ drinks:"Boissons", food:"Plats", games:"Jeux" },
+        sendWa:"Envoyer la commande sur WhatsApp", waHello:"Bonjour, je voudrais commander :" },
+};
+
+/* ═══ الطلب: يُحفظ في الهاتف حتى لا يضيع عند تحديث الصفحة ═══ */
+const PASS_ID = "games-pass";   // الألعاب تُطلب كـ«شخص يلعب بوقت مفتوح» وليس كل لعبة على حدة
+const PASS_ITEM = { id:PASS_ID, section:"games", name_ar:"ألعاب بوقت مفتوح", name_fr:"Jeux à volonté",
+                    price:GAMES_PASS.price, image:"images/uno.png" };
+const findItem = id => id === PASS_ID ? PASS_ITEM : MENU.find(p => p.id === id);
+const orderKey = p => p.section === "games" ? PASS_ID : p.id;
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c]));
+const ICON_PLUS = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>`;
+const ICON_MINUS = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M5 12h14"/></svg>`;
+
+// نص حافة الطبق بكل لغة
+// حرف المدّ «ـ» يطيل الحروف بين الكلمات مثل الخط المرجعي
+const RIM = { ar: "قهـــــــوة & حلـــويـــــــات", fr: "CAFÉ & DESSERTS" };
+const SEP = "   •   ";
+
+// تبديل اللغة: يغيّر اتجاه الصفحة ويحفظ الاختيار
+const store = { get(k){ try { return localStorage.getItem(k); } catch(e){ return null; } },
+                set(k,v){ try { localStorage.setItem(k,v); } catch(e){} } };
+let lang = store.get("coup-lang") === "fr" ? "fr" : "ar";
+
+// يكرر العبارة حول الطبق ويضبط حجم الخط حتى تملأ الدائرة بالتساوي
+function fitRim(){
+  const tp = document.getElementById("rimTP"), t = document.getElementById("rimText");
+  const C = 2 * Math.PI * 212;                 // محيط مسار الكتابة
+  const unit = RIM[lang] + SEP;
+  t.setAttribute("font-size", 40);
+  tp.textContent = unit;
+  const w = t.getComputedTextLength() || 300;  // طول العبارة بحجم 40
+  let n = Math.max(2, Math.round(C / (w * 0.95)));   // عدد التكرارات بحجم قريب من 40
+  let size = 40 * C / (w * n) * 0.985;
+  while (size > 46 && n < 8){ n++; size = 40 * C / (w * n) * 0.985; }
+  while (size < 30 && n > 2){ n--; size = 40 * C / (w * n) * 0.985; }
+  t.setAttribute("font-size", size.toFixed(2));
+  tp.textContent = unit.repeat(n);
+}
+
+function applyLang(){
+  document.documentElement.lang = lang;
+  document.documentElement.dir = lang === "ar" ? "rtl" : "ltr";
+  document.querySelectorAll(".lang button").forEach(b => b.setAttribute("aria-pressed", b.dataset.lang === lang));
+  document.querySelectorAll(".sec").forEach(b => { b.textContent = b.dataset[lang]; b.lang = lang; });
+  fitRim();
+  updateStage(true);
+  renderQuick();
+  renderOrder();
+}
+
+/* ═══ عرض المشروبات فوق الطبق ═══ */
+const $ = id => document.getElementById(id);
+const els = { stage:$("stage"), track:$("track"), prev:$("prev"), next:$("next"), count:$("count"), controls:$("controls"), info:$("info"),
+              add:$("addBtn"), qgrid:$("qgrid"), cartbar:$("cartbar"), sheet:$("sheet"), sheetBack:$("sheetBack"), lines:$("lines"),
+              waiter:$("waiter"), table:$("tableInput") };
+const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)");
+let section = "drinks", index = 0, items = [];
+const list = () => MENU.filter(p => p.section === section);
+const isRTL = () => lang === "ar";
+const other = () => lang === "ar" ? "fr" : "ar";
+const pad = n => String(n).padStart(2, "0");
+
+function buildStage(i = 0){
+  const data = list();
+  index = Math.max(0, Math.min(i, data.length - 1));
+  els.stage.dataset.section = section;
+  els.track.innerHTML = data.map((p, k) => {
+    const dur = (4.6 + (k % 3) * 0.75).toFixed(2), delay = (-k * 1.3).toFixed(2);
+    const popDelay = Math.min(Math.abs(k - index), 3) * 0.08;
+    return `<button class="item" type="button" data-i="${k}">
+      <span class="pop" style="animation-delay:${popDelay}s">
+        <span class="shadow" style="animation-duration:${dur}s;animation-delay:${delay}s"></span>
+        <span class="float" style="animation-duration:${dur}s;animation-delay:${delay}s">
+          <img src="${p.image}" alt="" draggable="false" decoding="async">
+        </span>
+      </span></button>`;
+  }).join("");
+  items = [...els.track.children];
+  renderQuick();
+  updateStage(true);
+}
+
+/* القائمة السريعة تحت الطبق */
+function renderQuick(){
+  $("quickTitle").textContent = `${T[lang].all} · ${T[lang].sections[section]}`;
+  $("quickPass").innerHTML = section === "games" ? `<bdi dir="ltr">${GAMES_PASS.price} ${CURRENCY}</bdi> ${esc(GAMES_PASS[lang])}` : "";
+  els.qgrid.innerHTML = list().map((p, k) => {
+    const name = esc(p["name_" + lang]);
+    const price = p.section === "games" ? "" : `<span class="t-price"><bdi>${p.price}</bdi><span>${CURRENCY}</span></span>`;
+    const plus = p.section === "games" ? "" :
+      `<button class="plus" type="button" data-add="${p.id}" aria-label="${esc(T[lang].addOne)}: ${name}">${ICON_PLUS}</button>`;
+    return `<div class="tile" data-i="${k}" data-id="${p.id}">
+      <button class="show" type="button" data-show="${k}">
+        <span class="thumb"><img src="${p.image}" alt="" loading="lazy" decoding="async"></span>
+        <span class="t-name">${name}</span>${price}
+      </button>${plus}<span class="badge" hidden></span></div>`;
+  }).join("");
+  markQuick();
+}
+function markQuick(){
+  els.qgrid.querySelectorAll(".tile").forEach(t => {
+    t.setAttribute("aria-current", +t.dataset.i === index);
+    const q = order[t.dataset.id] || 0, b = t.querySelector(".badge");
+    b.hidden = !q; b.textContent = q ? "×" + q : "";
+  });
+}
+els.qgrid.addEventListener("click", e => {
+  const add = e.target.closest("[data-add]");
+  if (add){ const p = MENU.find(x => x.id === add.dataset.add); if (p) addToOrder(p); return; }
+  const show = e.target.closest("[data-show]");
+  if (show){
+    go(+show.dataset.show);
+    els.stage.scrollIntoView({ behavior: reduceMotion.matches ? "auto" : "smooth", block: "start" });
+  }
+});
+
+/* إضافة إلى الطلب */
+let order = (() => { try { const o = JSON.parse(store.get("coup-order") || "{}"); return o && typeof o === "object" ? o : {}; } catch(e){ return {}; } })();
+const saveOrder = () => store.set("coup-order", JSON.stringify(order));
+const orderLines = () => Object.entries(order).map(([k, q]) => ({ k, item: findItem(k), q: +q })).filter(l => l.item && l.q > 0);
+const orderCount = () => orderLines().reduce((s, l) => s + l.q, 0);
+const orderTotal = () => orderLines().reduce((s, l) => s + l.item.price * l.q, 0);
+
+function addToOrder(p){
+  const k = orderKey(p);
+  order[k] = (order[k] || 0) + 1;
+  saveOrder(); renderOrder();
+  els.cartbar.classList.remove("bump"); void els.cartbar.offsetWidth; els.cartbar.classList.add("bump");
+}
+function setQty(k, q){
+  if (q <= 0) delete order[k]; else order[k] = q;
+  saveOrder(); renderOrder();
+}
+let addTimer;
+els.add.addEventListener("click", () => {
+  const p = list()[index]; if (!p) return;
+  addToOrder(p);
+  els.add.classList.add("done"); $("addLabel").textContent = T[lang].added;
+  clearTimeout(addTimer);
+  addTimer = setTimeout(() => {
+    els.add.classList.remove("done");
+    $("addLabel").textContent = p.section === "games" ? T[lang].addGame : T[lang].add;
+  }, 1300);
+});
+
+/* شريط الطلب + نافذة الطلب */
+function renderOrder(){
+  const n = orderCount(), total = orderTotal();
+  els.cartbar.classList.toggle("show", n > 0);
+  els.cartbar.setAttribute("aria-hidden", n === 0);
+  els.cartbar.tabIndex = n ? 0 : -1;
+  $("cbCount").textContent = n;
+  $("cbLabel").textContent = T[lang].myOrder;
+  $("cbTotal").innerHTML = `<bdi>${total}</bdi> ${CURRENCY}`;
+  $("sheetTitle").textContent = T[lang].myOrder;
+  $("sheetClose").setAttribute("aria-label", T[lang].close);
+  $("waiterClose").setAttribute("aria-label", T[lang].close);
+  $("tableLabel").textContent = T[lang].table;
+  $("sumLabel").textContent = T[lang].total;
+  $("sumAmt").textContent = total;
+  $("showWaiter").textContent = T[lang].showWaiter;
+  $("showWaiter").disabled = n === 0;
+  $("clearOrder").textContent = T[lang].clear;
+  $("clearOrder").hidden = n === 0;
+  $("sendWaLabel").textContent = T[lang].sendWa;
+  $("sendWa").hidden = n === 0;
+  const lines = orderLines();
+  els.lines.innerHTML = lines.length ? lines.map(({ k, item, q }) => {
+    const name = esc(item["name_" + lang]);
+    const unit = item.id === PASS_ID ? `${item.price} ${CURRENCY} / ${T[lang].persons}` : `${item.price} ${CURRENCY} ${T[lang].each}`;
+    return `<li class="line">
+      <img src="${item.image}" alt="">
+      <span class="l-name">${name}<span class="l-sub">${esc(unit)}</span></span>
+      <span class="l-end">
+        <span class="stepper">
+          <button type="button" data-dec="${k}" aria-label="${esc(T[lang].less)}: ${name}">${ICON_MINUS}</button>
+          <output>${q}</output>
+          <button type="button" data-inc="${k}" aria-label="${esc(T[lang].addOne)}: ${name}">${ICON_PLUS}</button>
+        </span>
+        <span class="l-total"><bdi>${item.price * q}</bdi> ${CURRENCY}</span>
+      </span></li>`;
+  }).join("") : `<li class="empty">${esc(T[lang].empty)}</li>`;
+  markQuick();
+}
+els.lines.addEventListener("click", e => {
+  const inc = e.target.closest("[data-inc]"), dec = e.target.closest("[data-dec]");
+  if (inc) setQty(inc.dataset.inc, (order[inc.dataset.inc] || 0) + 1);
+  if (dec) setQty(dec.dataset.dec, (order[dec.dataset.dec] || 0) - 1);
+});
+
+let lastFocus = null;
+function openSheet(){
+  lastFocus = document.activeElement;
+  els.sheet.classList.add("open"); els.sheetBack.classList.add("open");
+  setTimeout(() => $("sheetClose").focus(), 50);
+}
+function closeSheet(){
+  els.sheet.classList.remove("open"); els.sheetBack.classList.remove("open");
+  if (lastFocus && lastFocus.focus) lastFocus.focus();
+}
+els.cartbar.addEventListener("click", openSheet);
+$("sheetClose").addEventListener("click", closeSheet);
+els.sheetBack.addEventListener("click", closeSheet);
+$("clearOrder").addEventListener("click", () => {
+  if (!confirm(T[lang].confirmClear)) return;
+  order = {}; saveOrder(); renderOrder();
+});
+
+/* إرسال الطلب إلى واتساب المقهى: رسالة جاهزة فيها الطاولة والأصناف والمجموع */
+function whatsappMessage(){
+  const L = T[lang], t = els.table.value.trim();
+  const rows = orderLines().map(({ item, q }) =>
+    `• ${q} × ${item.name_ar} (${item.name_fr}) — ${item.price * q} ${CURRENCY}`);
+  return [
+    "☕ Cafe Coup",
+    L.waHello,
+    t ? `${L.table}: ${t}` : null,
+    "",
+    ...rows,
+    "",
+    `${L.total}: ${orderTotal()} ${CURRENCY}`,
+  ].filter(x => x !== null).join("\n");
+}
+$("sendWa").addEventListener("click", () => {
+  if (!orderLines().length) return;
+  const url = `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(whatsappMessage())}`;
+  window.open(url, "_blank", "noopener");
+});
+
+// رقم الطاولة: أرقام فقط، ويُحفظ
+els.table.value = store.get("coup-table") || "";
+els.table.addEventListener("input", () => {
+  els.table.value = els.table.value.replace(/[^0-9٠-٩]/g, "").slice(0, 4);
+  store.set("coup-table", els.table.value);
+});
+
+/* شاشة النادل: كبيرة، بالاسمين العربي والفرنسي */
+function openWaiter(){
+  const lines = orderLines(); if (!lines.length) return;
+  $("wTitle").textContent = T[lang].waiterTitle;
+  $("wTime").textContent = new Date().toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
+  const t = els.table.value.trim();
+  $("wTable").hidden = !t;
+  $("wTable").textContent = t ? `${T[lang].tableShort} ${t}` : "";
+  $("wLines").innerHTML = lines.map(({ item, q }) => `
+    <li class="w-line">
+      <span class="w-q" dir="ltr">${q}×</span>
+      <span class="w-n">${esc(item.name_ar)}<small lang="fr">${esc(item.name_fr)}</small></span>
+      <span class="w-p"><bdi>${item.price * q}</bdi></span>
+    </li>`).join("");
+  $("wSumLabel").textContent = T[lang].total;
+  $("wSum").textContent = orderTotal();
+  els.waiter.classList.add("open");
+  setTimeout(() => $("waiterClose").focus(), 50);
+}
+function closeWaiter(){ els.waiter.classList.remove("open"); $("showWaiter").focus(); }
+$("showWaiter").addEventListener("click", openWaiter);
+$("waiterClose").addEventListener("click", closeWaiter);
+document.addEventListener("keydown", e => {
+  if (e.key !== "Escape") return;
+  if (els.waiter.classList.contains("open")) closeWaiter();
+  else if (els.sheet.classList.contains("open")) closeSheet();
+});
+const overlayOpen = () => els.sheet.classList.contains("open") || els.waiter.classList.contains("open");
+
+// المنتج الأوسط كبير ومائل -8°، الجانبيان أصغر ومائلان ±14°، والباقي مخفي
+function layout(){
+  const w = els.stage.clientWidth, plate = els.stage.querySelector(".plate").clientWidth;
+  const spacing = section === "drinks" ? Math.min(w * 0.42, plate * 0.9) : Math.min(w * 0.52, plate * 1.05);
+  const dir = isRTL() ? -1 : 1;
+  items.forEach((el, i) => {
+    const o = i - index, a = Math.abs(o), s = Math.sign(o);
+    let scale, rot, op;
+    if (o === 0){ scale = 1.25; rot = -8; op = 1; }
+    else if (a === 1){ scale = .8; rot = 14 * s; op = .75; }
+    else { scale = .55; rot = 24 * s; op = 0; }
+    const x = s * Math.min(a, 3) * spacing * dir;
+    el.style.transform = `translate3d(${x.toFixed(1)}px,0,0) scale(${scale}) rotate(${rot * dir}deg)`;
+    el.style.opacity = op;
+    el.style.zIndex = 10 - a;
+  });
+}
+
+function updateStage(instant){
+  const data = list(), p = data[index];
+  layout();
+  items.forEach((el, i) => {
+    const a = Math.abs(i - index), q = data[i];
+    el.setAttribute("aria-hidden", a > 1);
+    el.tabIndex = a > 1 ? -1 : 0;
+    el.setAttribute("aria-label", q.section === "games" ? q["name_" + lang] : `${q["name_" + lang]} — ${q.price} ${CURRENCY}`);
+    el.querySelector("img").alt = q["name_" + lang];
+  });
+  els.controls.hidden = data.length < 2;
+  els.prev.disabled = index === 0;
+  els.next.disabled = index >= data.length - 1;
+  els.prev.setAttribute("aria-label", lang === "ar" ? "الصنف السابق" : "Précédent");
+  els.next.setAttribute("aria-label", lang === "ar" ? "الصنف التالي" : "Suivant");
+  els.count.innerHTML = data.length ? `<b>${pad(index + 1)}</b> / ${pad(data.length)}` : "";
+  renderInfo(p, instant);
+}
+
+let infoTimer;
+function renderInfo(p, instant){
+  const fill = () => {
+    $("pName").textContent = p ? p["name_" + lang] : SOON[lang];
+    $("pAlt").textContent = p ? p["name_" + other()] : "";
+    $("pAlt").lang = other();
+    $("pDesc").textContent = p ? p["desc_" + lang] : "";
+    $("pPrice").innerHTML = p ? `<bdi class="amt">${priceOf(p)}</bdi><span class="cur">${CURRENCY}</span>` : "";
+    $("pNote").textContent = p && p.section === "games" ? GAMES_PASS[lang] : "";
+    els.add.hidden = !p;
+    els.add.classList.remove("done");
+    $("addLabel").textContent = p && p.section === "games" ? T[lang].addGame : T[lang].add;
+  };
+  clearTimeout(infoTimer);
+  if (instant || reduceMotion.matches){ fill(); els.info.classList.remove("swap"); return; }
+  els.info.classList.add("swap");
+  infoTimer = setTimeout(() => { fill(); els.info.classList.remove("swap"); }, 220);
+}
+
+function go(i){
+  if (i < 0 || i >= list().length || i === index) return;
+  index = i; updateStage(); markQuick();
+}
+const step = d => go(index + d);
+els.prev.addEventListener("click", () => step(-1));
+els.next.addEventListener("click", () => step(1));
+
+// الضغط على مشروب جانبي يجعله في المنتصف
+let dragged = false;
+els.track.addEventListener("click", e => {
+  const b = e.target.closest(".item"); if (!b || dragged) return;
+  go(+b.dataset.i);
+});
+
+// السحب بالإصبع أو الفأرة يميناً ويساراً (التمرير العمودي يبقى للصفحة)
+let sx = 0, sy = 0, down = false;
+els.stage.addEventListener("pointerdown", e => { down = true; dragged = false; sx = e.clientX; sy = e.clientY; });
+els.stage.addEventListener("pointermove", e => { if (down && Math.abs(e.clientX - sx) > 10) dragged = true; });
+els.stage.addEventListener("pointerup", e => {
+  if (!down) return; down = false;
+  const dx = e.clientX - sx, dy = e.clientY - sy;
+  if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy) * 1.2) step((dx < 0 ? 1 : -1) * (isRTL() ? -1 : 1));
+  setTimeout(() => dragged = false, 0);
+});
+els.stage.addEventListener("pointercancel", () => { down = false; dragged = false; });
+
+// التمرير الأفقي بلوحة اللمس أو Shift + العجلة يحرّك المشروبات
+let wheelLock = false;
+els.stage.addEventListener("wheel", e => {
+  const horiz = Math.abs(e.deltaX) > Math.abs(e.deltaY);
+  if (!horiz && !e.shiftKey) return;
+  const d = horiz ? e.deltaX * (isRTL() ? -1 : 1) : e.deltaY;
+  if (Math.abs(d) < 4) return;
+  e.preventDefault();
+  if (wheelLock) return;
+  wheelLock = true; step(d > 0 ? 1 : -1);
+  setTimeout(() => wheelLock = false, 550);
+}, { passive: false });
+
+// أسهم لوحة المفاتيح
+document.addEventListener("keydown", e => {
+  if (e.altKey || e.ctrlKey || e.metaKey || overlayOpen() || /input|textarea/i.test(e.target.tagName)) return;
+  const fwd = isRTL() ? "ArrowLeft" : "ArrowRight", back = isRTL() ? "ArrowRight" : "ArrowLeft";
+  if (e.key === fwd){ e.preventDefault(); step(1); }
+  else if (e.key === back){ e.preventDefault(); step(-1); }
+});
+let rz; addEventListener("resize", () => { cancelAnimationFrame(rz); rz = requestAnimationFrame(layout); });
+
+// الأقسام: الإطار الدائري يظهر حول القسم المضغوط فقط، والعرض يتبدّل
+document.querySelector(".sections").addEventListener("click", e => {
+  const b = e.target.closest(".sec"); if (!b) return;
+  document.querySelectorAll(".sec").forEach(x => x.setAttribute("aria-pressed", x === b));
+  if (b.dataset.sec !== section){ section = b.dataset.sec; buildStage(0); }
+});
+document.querySelector(".lang").addEventListener("click", e => {
+  const b = e.target.closest("[data-lang]"); if (!b || b.dataset.lang === lang) return;
+  lang = b.dataset.lang; store.set("coup-lang", lang); applyLang();
+});
+buildStage(0);
+applyLang();
+document.fonts && document.fonts.ready.then(fitRim);   // إعادة الضبط بعد تحميل الخط
+</script>
+</body>
+</html>
