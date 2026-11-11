@@ -5,13 +5,18 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex, nofollow">
 <meta name="theme-color" content="#F3EADB">
-<title>Cafe Coup — لوحة التحكم</title>
+<title>Cafe Coup — Admin</title>
 <link rel="icon" href="images/logo-coup.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Lalezar&family=Tajawal:wght@500;700&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#F3EADB;--card:#FFF8EE;--ink:#3B2418;--muted:#8A5A3B;--line:rgba(59,36,24,.16);--ok:#3F7A3A;--bad:#B3412E;--ease:cubic-bezier(.2,.8,.2,1)}
+:root{--bg:#F3EADB;--card:#FFF8EE;--ink:#3B2418;--muted:#8A5A3B;--line:rgba(59,36,24,.16);--ok:#3F7A3A;--bad:#B3412E;--ease:cubic-bezier(.2,.8,.2,1);
+  /* ألوان حالات الطلب */
+  --st-new:#E0861A;--st-new-bg:#FDEBD3;
+  --st-served:#2F6FB0;--st-served-bg:#DCE9F6;
+  --st-paid:#3F7A3A;--st-paid-bg:#DDEFD8;
+  --st-cancelled:#8E8279;--st-cancelled-bg:#ECE6DF}
 *{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%}
 body{margin:0;min-height:100vh;background:var(--bg);color:var(--ink);font-family:"Tajawal",system-ui,sans-serif;font-weight:500;font-size:16px}
@@ -20,20 +25,28 @@ button{cursor:pointer}
 :focus-visible{outline:2px solid var(--muted);outline-offset:2px}
 .h{font-family:"Lalezar",sans-serif;font-weight:400}
 [hidden]{display:none !important}
-.wrap{max-width:720px;margin:0 auto;padding:max(14px, env(safe-area-inset-top)) 16px 120px}
+.wrap{max-width:760px;margin:0 auto;padding:max(14px, env(safe-area-inset-top)) 16px 120px}
+.sub{margin:0;color:var(--muted);font-size:14px}
 
 /* الأعلى */
-.top{display:flex;align-items:center;justify-content:space-between;gap:12px}
-.top img{height:38px}
-.top .actions{display:flex;gap:8px}
-.chip{border:1px solid var(--line);background:var(--card);border-radius:999px;padding:8px 14px;font-size:14px;text-decoration:none;color:var(--ink);display:inline-flex;align-items:center;gap:6px}
-h1{margin:14px 0 2px;font-size:30px}
-.sub{margin:0;color:var(--muted);font-size:14px}
+.top{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.top img{height:36px}
+.top .actions{display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
+.chip{border:1px solid var(--line);background:var(--card);border-radius:999px;padding:8px 13px;font-size:14px;text-decoration:none;color:var(--ink);display:inline-flex;align-items:center;gap:6px;line-height:1}
+.lang{display:inline-flex;border:1px solid var(--ink);border-radius:999px;padding:3px;gap:2px;direction:ltr}
+.lang button{border:0;background:none;border-radius:999px;padding:6px 11px 4px;font-family:"Lalezar",sans-serif;font-size:15px;line-height:1}
+.lang button[aria-pressed=true]{background:var(--ink);color:var(--bg)}
+
+/* التبويبات الرئيسية */
+.nav{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:16px 0 14px;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:5px}
+.nav button{border:0;background:none;border-radius:14px;padding:12px 6px 9px;font-family:"Lalezar",sans-serif;font-size:19px;line-height:1;position:relative}
+.nav button[aria-selected=true]{background:var(--ink);color:var(--bg)}
+.nav .dot{position:absolute;top:6px;inset-inline-end:10px;min-width:20px;height:20px;border-radius:999px;background:var(--st-new);color:#fff;font-family:"Tajawal";font-size:12px;line-height:21px;padding:0 6px}
+h1{margin:4px 0 2px;font-size:28px}
 
 /* الدخول */
 .login{max-width:380px;margin:12vh auto 0;background:var(--card);border:1px solid var(--line);border-radius:24px;padding:28px 22px;text-align:center}
 .login img{height:56px}
-.login h1{margin-top:12px}
 .login form{display:grid;gap:12px;margin-top:18px}
 .field{display:grid;gap:6px;text-align:start}
 .field label{font-size:14px;color:var(--muted)}
@@ -45,21 +58,58 @@ textarea.input{min-height:72px;resize:vertical;line-height:1.5}
 .btn:disabled{opacity:.45}
 .btn.ghost{background:none;color:var(--ink);border:1px solid var(--line)}
 .btn.danger{background:none;color:var(--bad);border:1px solid rgba(179,65,46,.35)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:14px}
 
-/* الأقسام */
-.tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;background:var(--card);border:1px solid var(--line);border-radius:999px;padding:5px;margin:18px 0 14px}
-.tab{border:0;background:none;border-radius:999px;padding:11px 6px 8px;font-family:"Lalezar",sans-serif;font-size:19px;line-height:1}
+/* ── الطلبات ── */
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:12px 10px;text-align:center}
+.stat b{display:block;font-family:"Lalezar",sans-serif;font-weight:400;font-size:30px;line-height:1.1}
+.stat span{font-size:13px;color:var(--muted)}
+.stat.paid b{color:var(--st-paid)} .stat.unpaid b{color:var(--st-new)}
+.dayhead{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.filters{display:flex;gap:6px;flex-wrap:wrap;margin:4px 0 12px}
+.f{border:1.5px solid var(--line);background:var(--card);border-radius:999px;padding:7px 12px 5px;font-size:14px;line-height:1;display:inline-flex;gap:6px;align-items:center}
+.f i{width:10px;height:10px;border-radius:50%;display:inline-block}
+.f[aria-pressed=true]{border-color:var(--ink);background:#fff;font-weight:700}
+.orders{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+.order{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:12px 14px;border-inline-start:7px solid var(--c);position:relative}
+.order.fresh{animation:fresh 1.2s var(--ease)}
+@keyframes fresh{0%{box-shadow:0 0 0 0 rgba(224,134,26,.6)}100%{box-shadow:0 0 0 14px rgba(224,134,26,0)}}
+.o-top{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.o-no{font-family:"Lalezar",sans-serif;font-size:24px;line-height:1}
+.o-table{font-family:"Lalezar",sans-serif;font-size:18px;border:1.5px solid var(--ink);border-radius:10px;padding:3px 9px 0;line-height:1.2}
+.o-meta{font-size:13px;color:var(--muted);margin-inline-start:auto;direction:ltr}
+.pill{font-size:13px;border-radius:999px;padding:4px 10px 2px;background:var(--bgc);color:var(--c);font-weight:700}
+.o-lines{list-style:none;margin:8px 0 6px;padding:0;font-size:15px}
+.o-lines li{display:flex;justify-content:space-between;gap:10px;padding:3px 0;border-bottom:1px dashed var(--line)}
+.o-lines li span:first-child b{font-family:"Lalezar",sans-serif;font-weight:400;font-size:17px;margin-inline-end:6px}
+.o-total{display:flex;justify-content:space-between;align-items:baseline;font-family:"Lalezar",sans-serif;font-size:20px;margin-top:4px}
+.o-actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+.sbtn{border:1.5px solid var(--c);color:var(--c);background:#fff;border-radius:999px;padding:8px 14px 6px;font-size:14px;font-weight:700;line-height:1}
+.sbtn.on{background:var(--c);color:#fff}
+.st-new{--c:var(--st-new);--bgc:var(--st-new-bg)}
+.st-served{--c:var(--st-served);--bgc:var(--st-served-bg)}
+.st-paid{--c:var(--st-paid);--bgc:var(--st-paid-bg)}
+.st-cancelled{--c:var(--st-cancelled);--bgc:var(--st-cancelled-bg)}
+.order.st-cancelled{opacity:.6}
+.empty{text-align:center;padding:30px 10px;color:var(--muted)}
+.archive{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.arow{width:100%;display:grid;grid-template-columns:1fr auto auto;gap:12px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:12px 14px;text-align:start}
+.arow .d{font-family:"Lalezar",sans-serif;font-size:19px}
+.arow .c{font-size:14px;color:var(--muted)}
+.arow .t{font-family:"Lalezar",sans-serif;font-size:18px;color:var(--st-paid)}
+.legend{display:flex;gap:10px;flex-wrap:wrap;font-size:13px;color:var(--muted);margin:2px 0 10px}
+
+/* ── المنيو ── */
+.tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;background:var(--card);border:1px solid var(--line);border-radius:999px;padding:5px;margin:8px 0 14px}
+.tab{border:0;background:none;border-radius:999px;padding:11px 6px 8px;font-family:"Lalezar",sans-serif;font-size:18px;line-height:1}
 .tab[aria-selected=true]{background:var(--ink);color:var(--bg)}
 .tab small{font-family:"Tajawal",sans-serif;font-size:12px;opacity:.7;margin-inline-start:4px}
-
-.pass{display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:12px 14px;margin-bottom:12px}
+.pass{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px}
 .pass label{flex:1;min-width:160px}
 .pass .input{width:120px;text-align:center}
-
 .add{width:100%;display:flex;align-items:center;justify-content:center;gap:8px;border:2px dashed rgba(59,36,24,.35);background:none;border-radius:18px;padding:16px;font-family:"Lalezar",sans-serif;font-size:20px;line-height:1}
 .add svg{width:18px;height:18px;margin-top:-3px}
-
-/* القائمة */
 .list{list-style:none;margin:12px 0 0;padding:0;display:grid;gap:10px}
 .row{display:grid;grid-template-columns:64px 1fr auto;gap:12px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:10px 12px}
 .row.off{opacity:.55}
@@ -67,14 +117,19 @@ textarea.input{min-height:72px;resize:vertical;line-height:1.5}
 .row .thumb img{max-width:100%;max-height:100%;object-fit:contain}
 .row .main{min-width:0;border:0;background:none;text-align:start;padding:0}
 .row .n{font-family:"Lalezar",sans-serif;font-size:19px;line-height:1.2;display:block}
-.row .f{font-size:13px;color:var(--muted);display:block;direction:ltr;text-align:start}
-html[dir=rtl] .row .f{text-align:right}
+.row .fn{font-size:13px;color:var(--muted);display:block}
 .row .p{font-size:15px;margin-top:4px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 .tag{font-size:12px;border-radius:999px;padding:2px 9px;background:rgba(179,65,46,.12);color:var(--bad)}
 .move{display:grid;gap:4px}
 .move button{width:34px;height:30px;border-radius:10px;border:1px solid var(--line);background:#fff;display:grid;place-items:center}
 .move button:disabled{opacity:.3}
 .move svg{width:14px;height:14px}
+
+/* ── الإعدادات ── */
+.settings{display:grid;gap:14px}
+.settings .card h3{margin:0 0 4px;font-family:"Lalezar",sans-serif;font-weight:400;font-size:21px}
+.settings .rowf{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
+.settings .rowf .input{flex:1;min-width:180px;direction:ltr;text-align:left}
 
 /* نافذة التعديل */
 .back{position:fixed;inset:0;background:rgba(30,14,6,.45);z-index:40;opacity:0;visibility:hidden;transition:opacity .25s,visibility .25s}
@@ -95,8 +150,8 @@ html[dir=rtl] .row .f{text-align:right}
 .switch{display:flex;align-items:center;justify-content:space-between;gap:12px;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:12px 14px}
 .switch input{width:22px;height:22px;accent-color:var(--ink)}
 .bar{display:grid;grid-template-columns:1fr auto;gap:10px;margin-top:4px}
-.fr{direction:ltr}
-html[dir=rtl] .fr{text-align:left}
+.ltr{direction:ltr}
+html[dir=rtl] .ltr{text-align:left}
 
 /* إشعار */
 .toast{position:fixed;left:50%;bottom:max(18px, env(safe-area-inset-bottom));transform:translate(-50%,150%);z-index:60;
@@ -113,16 +168,19 @@ html[dir=rtl] .fr{text-align:left}
 <!-- 1) الدخول -->
 <section class="login" id="loginView" hidden>
   <img src="images/logo-coup.png" alt="Cafe Coup">
-  <h1 class="h">لوحة صاحب المقهى</h1>
-  <p class="sub">هذه الصفحة خاصة. اكتب كلمة السر للدخول.</p>
+  <h1 class="h" data-t="loginTitle"></h1>
+  <p class="sub" data-t="loginSub"></p>
   <form id="loginForm">
     <div class="field">
-      <label for="pw">كلمة السر</label>
+      <label for="pw" data-t="password"></label>
       <input class="input" id="pw" type="password" autocomplete="current-password" required>
     </div>
     <p class="err" id="loginErr" role="alert"></p>
-    <button class="btn" type="submit" id="loginBtn">دخول</button>
+    <button class="btn" type="submit" id="loginBtn" data-t="login"></button>
   </form>
+  <div class="lang" style="margin-top:16px" role="group" aria-label="Langue / اللغة">
+    <button type="button" data-lang="ar">عربي</button><button type="button" data-lang="fr">FR</button>
+  </div>
 </section>
 
 <!-- 2) اللوحة -->
@@ -130,30 +188,87 @@ html[dir=rtl] .fr{text-align:left}
   <div class="top">
     <img src="images/logo-coup.png" alt="Cafe Coup">
     <div class="actions">
-      <a class="chip" href="./" target="_blank" rel="noopener">فتح المنيو ↗</a>
-      <button class="chip" type="button" id="logout">خروج</button>
+      <div class="lang" role="group" aria-label="Langue / اللغة">
+        <button type="button" data-lang="ar">عربي</button><button type="button" data-lang="fr">FR</button>
+      </div>
+      <a class="chip" href="./" target="_blank" rel="noopener" data-t="openMenu"></a>
+      <button class="chip" type="button" id="logout" data-t="logout"></button>
     </div>
   </div>
-  <h1 class="h">لوحة التحكم</h1>
-  <p class="sub" id="status">كل تعديل تحفظه يظهر في المنيو خلال ثوانٍ.</p>
 
-  <div class="tabs" role="tablist" id="tabs">
-    <button class="tab" role="tab" data-sec="drinks">مشروبات<small></small></button>
-    <button class="tab" role="tab" data-sec="food">طعام<small></small></button>
-    <button class="tab" role="tab" data-sec="games">ألعاب<small></small></button>
-  </div>
+  <nav class="nav" role="tablist" id="nav">
+    <button role="tab" data-view="orders"><span data-t="navOrders"></span><span class="dot" id="newDot" hidden></span></button>
+    <button role="tab" data-view="menu" data-t="navMenu"></button>
+    <button role="tab" data-view="settings" data-t="navSettings"></button>
+  </nav>
 
-  <div class="pass" id="passBox" hidden>
-    <label for="passPrice">سعر الألعاب للشخص (وقت مفتوح) — MRU</label>
-    <input class="input" id="passPrice" type="number" inputmode="numeric" min="0" step="1">
-    <button class="btn" type="button" id="passSave">حفظ</button>
-  </div>
+  <!-- الطلبات -->
+  <section id="ordersView">
+    <div class="dayhead">
+      <div>
+        <h1 class="h" id="dayTitle"></h1>
+        <p class="sub" id="dayDate"></p>
+      </div>
+      <button class="chip" type="button" id="archiveBtn" data-t="archive"></button>
+    </div>
+    <div class="stats">
+      <div class="stat"><b id="sCount">0</b><span data-t="statCount"></span></div>
+      <div class="stat paid"><b id="sPaid">0</b><span data-t="statPaid"></span></div>
+      <div class="stat unpaid"><b id="sUnpaid">0</b><span data-t="statUnpaid"></span></div>
+    </div>
+    <div class="filters" id="filters"></div>
+    <ul class="orders" id="orders"></ul>
+  </section>
 
-  <button class="add" type="button" id="addBtn">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
-    <span id="addLabel">إضافة صنف جديد</span>
-  </button>
-  <ul class="list" id="list"></ul>
+  <!-- الأرشيف -->
+  <section id="archiveView" hidden>
+    <div class="dayhead">
+      <h1 class="h" data-t="archive"></h1>
+      <button class="chip" type="button" id="backToday" data-t="backToday"></button>
+    </div>
+    <p class="sub" data-t="archiveSub" style="margin-bottom:12px"></p>
+    <ul class="archive" id="archive"></ul>
+  </section>
+
+  <!-- المنيو -->
+  <section id="menuView" hidden>
+    <p class="sub" id="status"></p>
+    <div class="tabs" role="tablist" id="tabs">
+      <button class="tab" role="tab" data-sec="drinks"><span data-t="secDrinks"></span><small></small></button>
+      <button class="tab" role="tab" data-sec="food"><span data-t="secFood"></span><small></small></button>
+      <button class="tab" role="tab" data-sec="games"><span data-t="secGames"></span><small></small></button>
+    </div>
+    <div class="pass card" id="passBox" hidden>
+      <label for="passPrice" data-t="passLabel"></label>
+      <input class="input" id="passPrice" type="number" inputmode="numeric" min="0" step="1">
+      <button class="btn" type="button" id="passSave" data-t="save"></button>
+    </div>
+    <button class="add" type="button" id="addBtn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+      <span id="addLabel"></span>
+    </button>
+    <ul class="list" id="list"></ul>
+  </section>
+
+  <!-- الإعدادات -->
+  <section id="settingsView" class="settings" hidden>
+    <div class="card">
+      <h3 data-t="waTitle"></h3>
+      <p class="sub" data-t="waSub"></p>
+      <div class="rowf">
+        <input class="input" id="waInput" inputmode="tel" autocomplete="off" placeholder="222 34 52 22 29">
+        <button class="btn" type="button" id="waSave" data-t="save"></button>
+      </div>
+      <p class="err" id="waErr"></p>
+    </div>
+    <div class="card">
+      <h3 data-t="langTitle"></h3>
+      <p class="sub" data-t="langSub"></p>
+      <div class="rowf">
+        <div class="lang" role="group"><button type="button" data-lang="ar">عربي</button><button type="button" data-lang="fr">Français</button></div>
+      </div>
+    </div>
+  </section>
 </main>
 
 <!-- نافذة إضافة / تعديل صنف -->
@@ -163,176 +278,349 @@ html[dir=rtl] .fr{text-align:left}
   <h2 class="h" id="sheetTitle"></h2>
   <form class="form" id="itemForm" novalidate>
     <div class="photo">
-      <div class="pv" id="pv"><span class="sub">لا صورة</span></div>
+      <div class="pv" id="pv"></div>
       <div>
-        <label class="filebtn" for="file">📷 <span id="fileLabel">اختيار صورة</span></label>
+        <label class="filebtn" for="file">📷 <span id="fileLabel"></span></label>
         <input id="file" type="file" accept="image/png,image/jpeg,image/webp" hidden>
-        <p class="hint">الأفضل صورة PNG بخلفية شفافة (المنتج وحده بدون خلفية).</p>
+        <p class="hint" data-t="photoHint"></p>
       </div>
     </div>
-
     <div class="field">
-      <label for="fSection">القسم</label>
+      <label for="fSection" data-t="section"></label>
       <select class="input" id="fSection">
-        <option value="drinks">مشروبات</option>
-        <option value="food">طعام</option>
-        <option value="games">ألعاب</option>
+        <option value="drinks" data-t="secDrinks"></option>
+        <option value="food" data-t="secFood"></option>
+        <option value="games" data-t="secGames"></option>
       </select>
     </div>
-
     <div class="two">
-      <div class="field"><label for="fNameAr">الاسم بالعربية *</label><input class="input" id="fNameAr" maxlength="80"></div>
-      <div class="field"><label for="fNameFr">الاسم بالفرنسية</label><input class="input fr" id="fNameFr" maxlength="80" lang="fr"></div>
+      <div class="field"><label for="fNameAr" data-t="nameAr"></label><input class="input" id="fNameAr" maxlength="80" dir="rtl" lang="ar"></div>
+      <div class="field"><label for="fNameFr" data-t="nameFr"></label><input class="input ltr" id="fNameFr" maxlength="80" lang="fr"></div>
     </div>
-    <div class="field"><label for="fDescAr">الوصف بالعربية</label><textarea class="input" id="fDescAr" maxlength="240"></textarea></div>
-    <div class="field"><label for="fDescFr">الوصف بالفرنسية</label><textarea class="input fr" id="fDescFr" maxlength="240" lang="fr"></textarea></div>
-    <div class="field" id="priceField"><label for="fPrice">السعر (MRU) *</label><input class="input" id="fPrice" type="number" inputmode="numeric" min="0" step="1"></div>
-
-    <label class="switch"><span>متوفر الآن (يظهر للزبائن)</span><input type="checkbox" id="fShown"></label>
-
+    <div class="field"><label for="fDescAr" data-t="descAr"></label><textarea class="input" id="fDescAr" maxlength="240" dir="rtl" lang="ar"></textarea></div>
+    <div class="field"><label for="fDescFr" data-t="descFr"></label><textarea class="input ltr" id="fDescFr" maxlength="240" lang="fr"></textarea></div>
+    <div class="field" id="priceField"><label for="fPrice" data-t="priceLabel"></label><input class="input" id="fPrice" type="number" inputmode="numeric" min="0" step="1"></div>
+    <label class="switch"><span data-t="available"></span><input type="checkbox" id="fShown"></label>
     <p class="err" id="formErr" role="alert"></p>
     <div class="bar">
-      <button class="btn" type="submit" id="saveBtn">حفظ</button>
-      <button class="btn ghost" type="button" id="cancelBtn">إلغاء</button>
+      <button class="btn" type="submit" id="saveBtn" data-t="save"></button>
+      <button class="btn ghost" type="button" id="cancelBtn" data-t="cancel"></button>
     </div>
-    <button class="btn danger" type="button" id="deleteBtn">حذف هذا الصنف نهائياً</button>
+    <button class="btn danger" type="button" id="deleteBtn" data-t="deleteItem"></button>
   </form>
 </div>
 
 <div class="toast" id="toast" role="status"></div>
-<div class="busy" id="busy" hidden>جارٍ الحفظ…</div>
+<div class="busy" id="busy" hidden></div>
 
 <script src="menu-data.js"></script>
 <script>
+/* ═══ نصوص اللوحة بالعربية والفرنسية ═══ */
+const TX = {
+  ar: {
+    loginTitle:"لوحة صاحب المقهى", loginSub:"هذه الصفحة خاصة. اكتب كلمة السر للدخول.", password:"كلمة السر", login:"دخول",
+    wrongPw:"كلمة السر غير صحيحة.", loginFail:"تعذّر الدخول، حاول مرة أخرى.", offline:"لا يوجد اتصال بالإنترنت.", noPw:"لم تُحدَّد كلمة سر بعد في إعدادات Vercel (ADMIN_PASSWORD).",
+    openMenu:"فتح المنيو ↗", logout:"خروج", navOrders:"الطلبات", navMenu:"المنيو", navSettings:"الإعدادات",
+    today:"طلبات اليوم", dayOf:"طلبات يوم", archive:"الأرشيف", backToday:"← طلبات اليوم", archiveSub:"كل الأيام السابقة. اضغط على أي يوم لعرض طلباته.",
+    statCount:"عدد الطلبات", statPaid:"مدفوع (MRU)", statUnpaid:"لم يُدفع بعد (MRU)",
+    all:"الكل", st_new:"جديد", st_served:"قُدِّم", st_paid:"مدفوع", st_cancelled:"ملغى",
+    noOrders:"لا توجد طلبات بعد. ستظهر هنا تلقائياً عندما يرسل زبون طلبه.", noArchive:"لا يوجد أرشيف بعد.",
+    table:"طاولة", code:"رمز", total:"المجموع", ordersN:n => `${n} طلب`, newOrder:n => `طلب جديد رقم ${n} 🔔`,
+    markServed:"قُدِّم للزبون", markPaid:"تم الدفع", markCancel:"إلغاء", markNew:"إرجاع إلى جديد", statusSaved:"تم تحديث الطلب ✓",
+    ordersDbMissing:"قاعدة الطلبات غير مفعّلة بعد.",
+    secDrinks:"مشروبات", secFood:"طعام", secGames:"ألعاب", passLabel:"سعر الألعاب للشخص (وقت مفتوح) — MRU", save:"حفظ", cancel:"إلغاء",
+    addItem:"إضافة صنف جديد", addGame:"إضافة لعبة جديدة", newItem:"صنف جديد", newGame:"لعبة جديدة", editItem:"تعديل الصنف",
+    noPhoto:"لا صورة", choosePhoto:"اختيار صورة", changePhoto:"تغيير الصورة", photoHint:"الأفضل صورة PNG بخلفية شفافة (المنتج وحده بدون خلفية).",
+    section:"القسم", nameAr:"الاسم بالعربية *", nameFr:"الاسم بالفرنسية", descAr:"الوصف بالعربية", descFr:"الوصف بالفرنسية", priceLabel:"السعر (MRU) *",
+    available:"متوفر الآن (يظهر للزبائن)", deleteItem:"حذف هذا الصنف نهائياً", hidden:"مخفي", inGamesPrice:"ضمن سعر الألعاب",
+    needName:"اكتب اسم الصنف بالعربية.", needPrice:"اكتب السعر بالأرقام.", needPhoto:"اختر صورة للصنف.", badPrice:"اكتب سعراً صحيحاً.",
+    added:"تمت إضافة الصنف ✓", edited:"تم حفظ التعديل ✓", deleted:"تم حذف الصنف ✓", reordered:"تم تغيير الترتيب ✓", passSaved:"تم حفظ سعر الألعاب ✓",
+    confirmDelete:n => `حذف «${n}» من المنيو نهائياً؟\n(لإخفائه مؤقتاً فقط ألغِ علامة «متوفر الآن» بدل الحذف)`,
+    notSaved:"لم يُحفظ. تحقق من الاتصال وحاول مرة أخرى.", loadFail:"تعذّر التحميل. تحقق من الاتصال.", expired:"انتهت صلاحية الدخول، سجّل الدخول مرة أخرى.",
+    lastSave:d => `آخر حفظ: ${d} · يظهر في المنيو خلال ثوانٍ.`, original:"هذه هي القائمة الأصلية. أول حفظ ينشرها من اللوحة.", saving:"جارٍ الحفظ…",
+    noItems:"لا توجد أصناف في هذا القسم بعد.", up:"تقديم", down:"تأخير",
+    waTitle:"رقم واتساب المقهى", waSub:"إليه تُرسل طلبات الزبائن. اكتبه بالصيغة الدولية مع رمز البلد، مثل 222 34 52 22 29.", waBad:"الرقم غير صحيح: 8 إلى 15 رقماً مع رمز البلد.", waSaved:"تم حفظ رقم واتساب ✓",
+    langTitle:"لغة اللوحة", langSub:"تغيّر لغة هذه اللوحة فقط. المنيو يبقى بالعربية والفرنسية للزبائن.",
+  },
+  fr: {
+    loginTitle:"Espace gérant", loginSub:"Page privée. Entrez le mot de passe pour continuer.", password:"Mot de passe", login:"Se connecter",
+    wrongPw:"Mot de passe incorrect.", loginFail:"Connexion impossible, réessayez.", offline:"Pas de connexion Internet.", noPw:"Aucun mot de passe n'est encore défini dans Vercel (ADMIN_PASSWORD).",
+    openMenu:"Voir le menu ↗", logout:"Déconnexion", navOrders:"Commandes", navMenu:"Menu", navSettings:"Réglages",
+    today:"Commandes du jour", dayOf:"Commandes du", archive:"Archives", backToday:"← Aujourd'hui", archiveSub:"Tous les jours précédents. Touchez un jour pour voir ses commandes.",
+    statCount:"Commandes", statPaid:"Payé (MRU)", statUnpaid:"Non payé (MRU)",
+    all:"Toutes", st_new:"Nouvelle", st_served:"Servie", st_paid:"Payée", st_cancelled:"Annulée",
+    noOrders:"Aucune commande pour l'instant. Elles s'afficheront ici automatiquement.", noArchive:"Pas encore d'archives.",
+    table:"Table", code:"Code", total:"Total", ordersN:n => `${n} commande${n > 1 ? "s" : ""}`, newOrder:n => `Nouvelle commande n° ${n} 🔔`,
+    markServed:"Servie", markPaid:"Payée", markCancel:"Annuler", markNew:"Remettre en nouvelle", statusSaved:"Commande mise à jour ✓",
+    ordersDbMissing:"La base des commandes n'est pas encore activée.",
+    secDrinks:"Boissons", secFood:"Plats", secGames:"Jeux", passLabel:"Prix des jeux par personne (temps illimité) — MRU", save:"Enregistrer", cancel:"Annuler",
+    addItem:"Ajouter un article", addGame:"Ajouter un jeu", newItem:"Nouvel article", newGame:"Nouveau jeu", editItem:"Modifier l'article",
+    noPhoto:"Pas de photo", choosePhoto:"Choisir une photo", changePhoto:"Changer la photo", photoHint:"Idéal : PNG à fond transparent (le produit seul).",
+    section:"Rubrique", nameAr:"Nom en arabe *", nameFr:"Nom en français", descAr:"Description en arabe", descFr:"Description en français", priceLabel:"Prix (MRU) *",
+    available:"Disponible (visible par les clients)", deleteItem:"Supprimer définitivement", hidden:"Masqué", inGamesPrice:"Compris dans le prix des jeux",
+    needName:"Écrivez le nom en arabe.", needPrice:"Écrivez le prix en chiffres.", needPhoto:"Choisissez une photo.", badPrice:"Entrez un prix valide.",
+    added:"Article ajouté ✓", edited:"Modification enregistrée ✓", deleted:"Article supprimé ✓", reordered:"Ordre modifié ✓", passSaved:"Prix des jeux enregistré ✓",
+    confirmDelete:n => `Supprimer « ${n} » définitivement ?\n(Pour le masquer temporairement, décochez « Disponible »)`,
+    notSaved:"Non enregistré. Vérifiez la connexion et réessayez.", loadFail:"Chargement impossible. Vérifiez la connexion.", expired:"Session expirée, reconnectez-vous.",
+    lastSave:d => `Dernier enregistrement : ${d} · visible sur le menu en quelques secondes.`, original:"Menu d'origine. Le premier enregistrement le publie depuis ce panneau.", saving:"Enregistrement…",
+    noItems:"Aucun article dans cette rubrique.", up:"Monter", down:"Descendre",
+    waTitle:"Numéro WhatsApp du café", waSub:"Les commandes des clients y sont envoyées. Format international avec l'indicatif, ex. 222 34 52 22 29.", waBad:"Numéro invalide : 8 à 15 chiffres avec l'indicatif.", waSaved:"Numéro WhatsApp enregistré ✓",
+    langTitle:"Langue du panneau", langSub:"Change seulement la langue de ce panneau. Le menu reste en arabe et en français pour les clients.",
+  },
+};
+let L = (() => { try { return localStorage.getItem("coup-admin-lang") === "fr" ? "fr" : "ar"; } catch { return "ar"; } })();
+const t = (k, ...a) => { const v = TX[L][k]; return typeof v === "function" ? v(...a) : (v ?? k); };
+
 const $ = id => document.getElementById(id);
-const H = { "x-coup-admin": "1" };
-const SEC_NAME = { drinks: "مشروبات", food: "طعام", games: "ألعاب" };
-let menu = { items: [], gamesPassPrice: 200 };
-let section = "drinks";
-let editing = null;      // الصنف الذي يُعدّل (null = جديد)
-let pendingImage = null; // صورة جديدة اختيرت ولم تُرفع بعد
-
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c]));
+const api = (path, opts = {}) => fetch(path, { credentials: "same-origin", ...opts, headers: { "x-coup-admin": "1", ...(opts.headers || {}) } });
+const fmtDate = (iso, opts) => new Date(iso).toLocaleString(L === "fr" ? "fr-FR" : "ar-u-nu-latn", opts);
+const nameOf = it => (L === "fr" ? (it.name_fr || it.name_ar) : (it.name_ar || it.name_fr));
 function toast(msg, bad){
-  const t = $("toast"); t.textContent = msg; t.classList.toggle("bad", !!bad);
-  t.classList.add("show"); clearTimeout(t._t); t._t = setTimeout(() => t.classList.remove("show"), bad ? 4500 : 2600);
+  const el = $("toast"); el.textContent = msg; el.classList.toggle("bad", !!bad);
+  el.classList.add("show"); clearTimeout(el._t); el._t = setTimeout(() => el.classList.remove("show"), bad ? 4500 : 2600);
 }
-const api = (path, opts = {}) => fetch(path, { credentials: "same-origin", ...opts, headers: { ...H, ...(opts.headers || {}) } });
 
-/* ── الدخول ── */
+/* ═══ اللغة ═══ */
+function applyLang(){
+  document.documentElement.lang = L;
+  document.documentElement.dir = L === "ar" ? "rtl" : "ltr";
+  document.querySelectorAll("[data-t]").forEach(el => el.textContent = t(el.dataset.t));
+  document.querySelectorAll(".lang button").forEach(b => b.setAttribute("aria-pressed", b.dataset.lang === L));
+  $("busy").textContent = t("saving");
+  if (!$("appView").hidden){ renderOrders(); renderArchive(); renderMenu(); renderStatus(); }
+}
+document.addEventListener("click", e => {
+  const b = e.target.closest(".lang [data-lang]"); if (!b || b.dataset.lang === L) return;
+  L = b.dataset.lang; try { localStorage.setItem("coup-admin-lang", L); } catch {}
+  applyLang();
+});
+
+/* ═══ الدخول ═══ */
 async function start(){
   let s = { authed: false, configured: true };
   try { s = await (await api("api/login")).json(); } catch {}
   if (!s.authed){
     $("loginView").hidden = false; $("appView").hidden = true;
-    if (s.configured === false){ $("loginErr").textContent = "لم تُحدَّد كلمة سر بعد في إعدادات Vercel (ADMIN_PASSWORD)."; $("loginBtn").disabled = true; }
+    if (s.configured === false){ $("loginErr").textContent = t("noPw"); $("loginBtn").disabled = true; }
     setTimeout(() => $("pw").focus(), 50);
     return;
   }
   $("loginView").hidden = true; $("appView").hidden = false;
-  await loadMenu();
+  applyLang();
+  show("orders");
+  await Promise.all([loadMenu(), loadOrders()]);
+  setInterval(() => { if (!document.hidden && viewing === "orders" && orderDay === todayDay) loadOrders(true); }, 15000);
 }
 $("loginForm").addEventListener("submit", async e => {
   e.preventDefault();
-  $("loginErr").textContent = ""; $("loginBtn").disabled = true; $("loginBtn").textContent = "…";
+  $("loginErr").textContent = ""; $("loginBtn").disabled = true;
   try {
     const r = await api("api/login", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ password: $("pw").value }) });
     if (r.ok){ $("pw").value = ""; await start(); }
-    else $("loginErr").textContent = r.status === 401 ? "كلمة السر غير صحيحة." : "تعذّر الدخول، حاول مرة أخرى.";
-  } catch { $("loginErr").textContent = "لا يوجد اتصال بالإنترنت."; }
-  $("loginBtn").disabled = false; $("loginBtn").textContent = "دخول";
+    else $("loginErr").textContent = r.status === 401 ? t("wrongPw") : t("loginFail");
+  } catch { $("loginErr").textContent = t("offline"); }
+  $("loginBtn").disabled = false;
 });
 $("logout").addEventListener("click", async () => { await api("api/login", { method: "DELETE" }).catch(() => {}); location.reload(); });
+function sessionExpired(){ toast(t("expired"), true); setTimeout(() => location.reload(), 1800); return false; }
 
-/* ── تحميل المنيو ── */
+/* ═══ التنقل بين الأقسام ═══ */
+let viewing = "orders";
+function show(v){
+  viewing = v;
+  document.querySelectorAll("#nav [data-view]").forEach(b => b.setAttribute("aria-selected", b.dataset.view === v));
+  $("ordersView").hidden = v !== "orders"; $("archiveView").hidden = v !== "archive";
+  $("menuView").hidden = v !== "menu"; $("settingsView").hidden = v !== "settings";
+  if (v === "archive") document.querySelector('#nav [data-view="orders"]').setAttribute("aria-selected", true);
+  window.scrollTo(0, 0);
+}
+$("nav").addEventListener("click", e => {
+  const b = e.target.closest("[data-view]"); if (!b) return;
+  if (b.dataset.view === "orders"){ orderDay = todayDay; loadOrders(); }
+  show(b.dataset.view);
+});
+
+/* ═══════════ الطلبات ═══════════ */
+const STATUSES = ["new", "served", "paid", "cancelled"];
+let orders = [], summary = null, orderDay = "", todayDay = "", filter = "all", knownIds = null, ordersErr = "";
+async function loadOrders(silent){
+  try {
+    const r = await api(`api/orders${orderDay && orderDay !== todayDay ? "?day=" + orderDay : ""}`);
+    if (r.status === 401) return sessionExpired();
+    const d = await r.json();
+    if (!r.ok){ ordersErr = String(d.detail || "").includes("not-configured") ? t("ordersDbMissing") : t("loadFail"); renderOrders(); return; }
+    ordersErr = "";
+    todayDay = d.today; orderDay = d.day;
+    // تنبيه عند وصول طلب جديد
+    const ids = new Set(d.orders.map(o => o.id));
+    const fresh = knownIds && d.day === todayDay ? d.orders.filter(o => !knownIds.has(o.id)) : [];
+    knownIds = d.day === todayDay ? ids : knownIds;
+    orders = d.orders; summary = d.summary;
+    renderOrders(fresh.map(o => o.id));
+    if (fresh.length){ toast(t("newOrder", fresh[0].no)); beep(); }
+  } catch { if (!silent) toast(t("loadFail"), true); }
+}
+function beep(){
+  try { const a = new (window.AudioContext || window.webkitAudioContext)(), o = a.createOscillator(), g = a.createGain();
+    o.connect(g); g.connect(a.destination); o.frequency.value = 880; g.gain.setValueAtTime(.15, a.currentTime);
+    g.gain.exponentialRampToValueAtTime(.001, a.currentTime + .5); o.start(); o.stop(a.currentTime + .5); } catch {}
+}
+function renderOrders(freshIds = []){
+  const isToday = !orderDay || orderDay === todayDay;
+  $("dayTitle").textContent = isToday ? t("today") : t("dayOf");
+  $("dayDate").textContent = orderDay ? fmtDate(orderDay + "T12:00:00Z", { weekday: "long", day: "numeric", month: "long", year: "numeric" }) : "";
+  const s = summary || { count: 0, paid: 0, unpaid: 0, byStatus: {} };
+  $("sCount").textContent = s.count; $("sPaid").textContent = s.paid; $("sUnpaid").textContent = s.unpaid;
+  const newCount = isToday ? (s.byStatus.new || 0) : 0;
+  $("newDot").hidden = !newCount; $("newDot").textContent = newCount;
+  $("filters").innerHTML = [`<button class="f" data-f="all" aria-pressed="${filter === "all"}">${t("all")} · ${orders.length}</button>`]
+    .concat(STATUSES.map(st => `<button class="f st-${st}" data-f="${st}" aria-pressed="${filter === st}"><i style="background:var(--c)"></i>${t("st_" + st)} · ${s.byStatus[st] || 0}</button>`)).join("");
+  const shown = orders.filter(o => filter === "all" || o.status === filter);
+  if (ordersErr){ $("orders").innerHTML = `<li class="empty">${esc(ordersErr)}</li>`; return; }
+  $("orders").innerHTML = shown.length ? shown.map(o => {
+    const actions = [
+      o.status !== "served" && o.status !== "paid" && o.status !== "cancelled" ? ["served", t("markServed")] : null,
+      o.status !== "paid" && o.status !== "cancelled" ? ["paid", t("markPaid")] : null,
+      o.status === "new" ? ["cancelled", t("markCancel")] : null,
+      o.status !== "new" ? ["new", t("markNew")] : null,
+    ].filter(Boolean);
+    return `<li class="order st-${o.status} ${freshIds.includes(o.id) ? "fresh" : ""}">
+      <div class="o-top">
+        <span class="o-no">#${o.no}</span>
+        <span class="o-table">${t("table")} ${esc(o.table)}</span>
+        <span class="pill">${t("st_" + o.status)}</span>
+        <span class="o-meta">${esc(fmtDate(o.at, { hour: "2-digit", minute: "2-digit" }))} · ${t("code")} ${esc(o.code)}</span>
+      </div>
+      <ul class="o-lines">${o.lines.map(l => `<li><span><b>${l.q}×</b>${esc(nameOf(l))}</span><span>${l.q * l.price}</span></li>`).join("")}</ul>
+      <div class="o-total"><span>${t("total")}</span><span>${o.total} MRU</span></div>
+      <div class="o-actions">${actions.map(([st, label]) => `<button class="sbtn st-${st}" type="button" data-set="${st}" data-id="${esc(o.id)}">${label}</button>`).join("")}</div>
+    </li>`;
+  }).join("") : `<li class="empty">${t("noOrders")}</li>`;
+}
+$("filters").addEventListener("click", e => { const b = e.target.closest("[data-f]"); if (b){ filter = b.dataset.f; renderOrders(); } });
+$("orders").addEventListener("click", async e => {
+  const b = e.target.closest("[data-set]"); if (!b) return;
+  b.disabled = true;
+  try {
+    const r = await api("api/orders", { method: "PATCH", headers: { "content-type": "application/json" }, body: JSON.stringify({ day: orderDay, id: b.dataset.id, status: b.dataset.set }) });
+    if (r.status === 401) return sessionExpired();
+    if (!r.ok) throw 0;
+    toast(t("statusSaved")); await loadOrders(true);
+  } catch { toast(t("notSaved"), true); b.disabled = false; }
+});
+
+/* ═══════════ الأرشيف ═══════════ */
+let archiveDays = null;
+$("archiveBtn").addEventListener("click", async () => { show("archive"); await loadArchive(); });
+$("backToday").addEventListener("click", () => { orderDay = todayDay; show("orders"); loadOrders(); });
+async function loadArchive(){
+  try {
+    const r = await api("api/orders?archive=1");
+    if (r.status === 401) return sessionExpired();
+    const d = await r.json(); if (!r.ok) throw 0;
+    todayDay = d.today; archiveDays = d.days; renderArchive();
+  } catch { toast(t("loadFail"), true); }
+}
+function renderArchive(){
+  if (!archiveDays) return;
+  $("archive").innerHTML = archiveDays.length ? archiveDays.map(d => `<li><button class="arow" type="button" data-day="${d.day}">
+      <span><span class="d">${esc(fmtDate(d.day + "T12:00:00Z", { weekday: "short", day: "numeric", month: "short", year: "numeric" }))}</span><br><span class="c">${t("ordersN", d.count)}${d.day === todayDay ? " · " + t("today") : ""}</span></span>
+      <span class="t">${d.paid} MRU</span><span aria-hidden="true">›</span>
+    </button></li>`).join("") : `<li class="empty">${t("noArchive")}</li>`;
+}
+$("archive").addEventListener("click", e => {
+  const b = e.target.closest("[data-day]"); if (!b) return;
+  orderDay = b.dataset.day; filter = "all"; show("orders"); loadOrders();
+});
+
+/* ═══════════ المنيو ═══════════ */
+let menu = { items: [], gamesPassPrice: 200, whatsapp: "22234522229" }, savedAt = null, isOriginal = false;
+let section = "drinks", editing = null, pendingImage = null;
 async function loadMenu(){
   try {
     const d = await (await fetch("api/menu", { cache: "no-store" })).json();
     if (d && Array.isArray(d.items) && d.items.length){
-      menu = { items: d.items, gamesPassPrice: d.gamesPassPrice ?? 200 };
-      if (d.savedAt) $("status").textContent = "آخر حفظ: " + new Date(d.savedAt).toLocaleString("fr-FR", { dateStyle: "short", timeStyle: "short" });
+      menu = { items: d.items, gamesPassPrice: d.gamesPassPrice ?? 200, whatsapp: d.whatsapp || "22234522229" };
+      savedAt = d.savedAt || null; isOriginal = false;
     } else {
-      menu = JSON.parse(JSON.stringify(window.COUP_DEFAULT || { items: [], gamesPassPrice: 200 }));
-      $("status").textContent = "هذه هي القائمة الأصلية. أول حفظ ينشرها من اللوحة.";
+      const def = JSON.parse(JSON.stringify(window.COUP_DEFAULT || { items: [], gamesPassPrice: 200 }));
+      menu = { items: def.items, gamesPassPrice: def.gamesPassPrice, whatsapp: "22234522229" }; isOriginal = true;
     }
-  } catch {
-    toast("تعذّر تحميل المنيو. تحقق من الاتصال.", true);
-  }
-  render();
+  } catch { toast(t("loadFail"), true); }
+  $("waInput").value = menu.whatsapp;
+  renderMenu(); renderStatus();
 }
-
-/* ── العرض ── */
+function renderStatus(){
+  $("status").textContent = isOriginal ? t("original") : savedAt ? t("lastSave", fmtDate(savedAt, { dateStyle: "short", timeStyle: "short" })) : "";
+}
 const ICON_UP = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 15l6-6 6 6"/></svg>';
 const ICON_DOWN = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>';
-function render(){
-  document.querySelectorAll(".tab").forEach(t => {
-    t.setAttribute("aria-selected", t.dataset.sec === section);
-    t.querySelector("small").textContent = menu.items.filter(i => i.section === t.dataset.sec).length;
+function renderMenu(){
+  document.querySelectorAll(".tab").forEach(b => {
+    b.setAttribute("aria-selected", b.dataset.sec === section);
+    b.querySelector("small").textContent = menu.items.filter(i => i.section === b.dataset.sec).length;
   });
   $("passBox").hidden = section !== "games";
   $("passPrice").value = menu.gamesPassPrice;
-  $("addLabel").textContent = section === "games" ? "إضافة لعبة جديدة" : "إضافة صنف جديد";
+  $("addLabel").textContent = section === "games" ? t("addGame") : t("addItem");
   const rows = menu.items.map((it, i) => ({ it, i })).filter(x => x.it.section === section);
+  const other = it => (L === "fr" ? it.name_ar : it.name_fr);
   $("list").innerHTML = rows.length ? rows.map(({ it, i }, k) => `
     <li class="row ${it.hidden ? "off" : ""}">
       <div class="thumb">${it.image ? `<img src="${esc(it.image)}" alt="">` : ""}</div>
       <button class="main" type="button" data-edit="${i}">
-        <span class="n">${esc(it.name_ar || it.name_fr)}</span>
-        <span class="f">${esc(it.name_fr)}</span>
-        <span class="p">${it.section === "games" ? "ضمن سعر الألعاب" : `<b>${esc(it.price)}</b> MRU`}${it.hidden ? '<span class="tag">مخفي</span>' : ""}</span>
+        <span class="n">${esc(nameOf(it))}</span>
+        <span class="fn">${esc(other(it) || "")}</span>
+        <span class="p">${it.section === "games" ? t("inGamesPrice") : `<b>${esc(it.price)}</b> MRU`}${it.hidden ? `<span class="tag">${t("hidden")}</span>` : ""}</span>
       </button>
       <div class="move">
-        <button type="button" data-up="${i}" aria-label="تقديم" ${k === 0 ? "disabled" : ""}>${ICON_UP}</button>
-        <button type="button" data-down="${i}" aria-label="تأخير" ${k === rows.length - 1 ? "disabled" : ""}>${ICON_DOWN}</button>
+        <button type="button" data-up="${i}" aria-label="${t("up")}" ${k === 0 ? "disabled" : ""}>${ICON_UP}</button>
+        <button type="button" data-down="${i}" aria-label="${t("down")}" ${k === rows.length - 1 ? "disabled" : ""}>${ICON_DOWN}</button>
       </div>
-    </li>`).join("") : `<li class="sub" style="text-align:center;padding:24px">لا توجد أصناف في هذا القسم بعد.</li>`;
+    </li>`).join("") : `<li class="empty">${t("noItems")}</li>`;
 }
-$("tabs").addEventListener("click", e => { const t = e.target.closest(".tab"); if (t){ section = t.dataset.sec; render(); } });
-
-/* ترتيب الأصناف (أعلى / أسفل) — يُحفظ فوراً */
+$("tabs").addEventListener("click", e => { const b = e.target.closest(".tab"); if (b){ section = b.dataset.sec; renderMenu(); } });
 $("list").addEventListener("click", async e => {
   const ed = e.target.closest("[data-edit]"), up = e.target.closest("[data-up]"), dn = e.target.closest("[data-down]");
   if (ed) return openEditor(+ed.dataset.edit);
   if (up || dn){
     const i = +(up || dn).dataset[up ? "up" : "down"];
     const same = menu.items.map((it, k) => ({ it, k })).filter(x => x.it.section === section).map(x => x.k);
-    const pos = same.indexOf(i), j = same[pos + (up ? -1 : 1)];
+    const j = same[same.indexOf(i) + (up ? -1 : 1)];
     if (j === undefined) return;
     [menu.items[i], menu.items[j]] = [menu.items[j], menu.items[i]];
-    render();
-    await save("تم تغيير الترتيب ✓");
+    renderMenu();
+    await save(t("reordered"));
   }
 });
-
-/* سعر الألعاب */
 $("passSave").addEventListener("click", async () => {
   const v = Math.round(+$("passPrice").value);
-  if (!(v >= 0) || $("passPrice").value === ""){ toast("اكتب سعراً صحيحاً.", true); return; }
+  if ($("passPrice").value === "" || !(v >= 0)){ toast(t("badPrice"), true); return; }
   menu.gamesPassPrice = v;
-  await save("تم حفظ سعر الألعاب ✓");
+  await save(t("passSaved"));
 });
 
-/* ── نافذة الصنف ── */
+/* نافذة الصنف */
 function openEditor(i){
   editing = Number.isInteger(i) ? i : null;
   const it = editing === null ? { section, name_ar: "", name_fr: "", desc_ar: "", desc_fr: "", price: "", image: "" } : menu.items[editing];
   pendingImage = null;
-  $("sheetTitle").textContent = editing === null ? (section === "games" ? "لعبة جديدة" : "صنف جديد") : "تعديل الصنف";
+  $("sheetTitle").textContent = editing === null ? (section === "games" ? t("newGame") : t("newItem")) : t("editItem");
   $("fSection").value = it.section;
   $("fNameAr").value = it.name_ar || ""; $("fNameFr").value = it.name_fr || "";
   $("fDescAr").value = it.desc_ar || ""; $("fDescFr").value = it.desc_fr || "";
   $("fPrice").value = it.price ?? "";
   $("fShown").checked = !it.hidden;
   setPreview(it.image);
-  $("fileLabel").textContent = it.image ? "تغيير الصورة" : "اختيار صورة";
+  $("fileLabel").textContent = it.image ? t("changePhoto") : t("choosePhoto");
   $("deleteBtn").hidden = editing === null;
   $("formErr").textContent = "";
   syncPriceField();
   $("back").classList.add("open"); $("sheet").classList.add("open"); $("sheet").scrollTop = 0;
-  setTimeout(() => $("fNameAr").focus(), 300);
 }
 function closeEditor(){ $("back").classList.remove("open"); $("sheet").classList.remove("open"); }
-function setPreview(src){ $("pv").innerHTML = src ? `<img src="${esc(src)}" alt="">` : '<span class="sub">لا صورة</span>'; }
+function setPreview(src){ $("pv").innerHTML = src ? `<img src="${esc(src)}" alt="">` : `<span class="sub">${t("noPhoto")}</span>`; }
 function syncPriceField(){ $("priceField").hidden = $("fSection").value === "games"; }
 $("fSection").addEventListener("change", syncPriceField);
 $("addBtn").addEventListener("click", () => openEditor(null));
@@ -340,10 +628,9 @@ $("cancelBtn").addEventListener("click", closeEditor);
 $("back").addEventListener("click", closeEditor);
 document.addEventListener("keydown", e => { if (e.key === "Escape") closeEditor(); });
 
-/* تصغير الصورة في الهاتف قبل الرفع (أسرع، وتبقى الخلفية الشفافة) */
 async function shrink(file){
   const bmp = await createImageBitmap(file);
-  const max = 900, k = Math.min(1, max / Math.max(bmp.width, bmp.height));
+  const k = Math.min(1, 900 / Math.max(bmp.width, bmp.height));
   const c = document.createElement("canvas");
   c.width = Math.round(bmp.width * k); c.height = Math.round(bmp.height * k);
   c.getContext("2d").drawImage(bmp, 0, 0, c.width, c.height);
@@ -353,31 +640,21 @@ async function shrink(file){
 }
 $("file").addEventListener("change", async () => {
   const f = $("file").files[0]; if (!f) return;
-  try { pendingImage = await shrink(f); }
-  catch { pendingImage = f; }
+  try { pendingImage = await shrink(f); } catch { pendingImage = f; }
   setPreview(URL.createObjectURL(pendingImage));
-  $("fileLabel").textContent = "تغيير الصورة";
+  $("fileLabel").textContent = t("changePhoto");
   $("file").value = "";
 });
-
 const slug = s => (s || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 40);
-function newId(nameFr){
-  const base = slug(nameFr) || "item";
-  let id = base, n = 2;
-  while (menu.items.some(i => i.id === id)) id = `${base}-${n++}`;
-  return id;
-}
+function newId(name){ const base = slug(name) || "item"; let id = base, n = 2; while (menu.items.some(i => i.id === id)) id = `${base}-${n++}`; return id; }
 
 $("itemForm").addEventListener("submit", async e => {
   e.preventDefault();
-  const sec = $("fSection").value;
-  const nameAr = $("fNameAr").value.trim(), nameFr = $("fNameFr").value.trim();
-  const priceRaw = $("fPrice").value;
-  if (!nameAr){ $("formErr").textContent = "اكتب اسم الصنف بالعربية."; $("fNameAr").focus(); return; }
-  if (sec !== "games" && (priceRaw === "" || !(+priceRaw >= 0))){ $("formErr").textContent = "اكتب السعر بالأرقام."; $("fPrice").focus(); return; }
-  if (editing === null && !pendingImage){ $("formErr").textContent = "اختر صورة للصنف."; return; }
+  const sec = $("fSection").value, nameAr = $("fNameAr").value.trim(), nameFr = $("fNameFr").value.trim(), priceRaw = $("fPrice").value;
+  if (!nameAr){ $("formErr").textContent = t("needName"); $("fNameAr").focus(); return; }
+  if (sec !== "games" && (priceRaw === "" || !(+priceRaw >= 0))){ $("formErr").textContent = t("needPrice"); $("fPrice").focus(); return; }
+  if (editing === null && !pendingImage){ $("formErr").textContent = t("needPhoto"); return; }
   $("formErr").textContent = "";
-
   const before = JSON.parse(JSON.stringify(menu));
   $("busy").hidden = false;
   try {
@@ -388,52 +665,50 @@ $("itemForm").addEventListener("submit", async e => {
       if (!r.ok) throw new Error("upload");
       image = (await r.json()).url;
     }
-    const it = {
-      ...(editing === null ? { id: newId(nameFr || nameAr) } : menu.items[editing]),
-      section: sec, name_ar: nameAr, name_fr: nameFr,
-      desc_ar: $("fDescAr").value.trim(), desc_fr: $("fDescFr").value.trim(), image,
-    };
+    const it = { ...(editing === null ? { id: newId(nameFr || nameAr) } : menu.items[editing]),
+      section: sec, name_ar: nameAr, name_fr: nameFr, desc_ar: $("fDescAr").value.trim(), desc_fr: $("fDescFr").value.trim(), image };
     if (sec === "games") delete it.price; else it.price = Math.round(+priceRaw);
     if ($("fShown").checked) delete it.hidden; else it.hidden = true;
     if (editing === null) menu.items.push(it);
     else if (menu.items[editing].section !== sec){ menu.items.splice(editing, 1); menu.items.push(it); }
     else menu.items[editing] = it;
-    const ok = await save(editing === null ? "تمت إضافة الصنف ✓" : "تم حفظ التعديل ✓", true);
-    if (!ok){ menu = before; render(); return; }
-    section = sec; closeEditor(); render();
-  } catch {
-    menu = before; render();
-    toast("لم يُحفظ. تحقق من الاتصال وحاول مرة أخرى.", true);
-  } finally { $("busy").hidden = true; }
+    const ok = await save(editing === null ? t("added") : t("edited"), true);
+    if (!ok){ menu = before; renderMenu(); return; }
+    section = sec; closeEditor(); renderMenu();
+  } catch { menu = before; renderMenu(); toast(t("notSaved"), true); }
+  finally { $("busy").hidden = true; }
 });
-
 $("deleteBtn").addEventListener("click", async () => {
   if (editing === null) return;
-  const it = menu.items[editing];
-  if (!confirm(`حذف «${it.name_ar || it.name_fr}» من المنيو نهائياً؟\n(إن أردت إخفاءه مؤقتاً فقط، ألغِ علامة «متوفر الآن» بدل الحذف)`)) return;
+  if (!confirm(t("confirmDelete", nameOf(menu.items[editing])))) return;
   const before = JSON.parse(JSON.stringify(menu));
   menu.items.splice(editing, 1);
-  if (await save("تم حذف الصنف ✓")){ closeEditor(); render(); } else { menu = before; render(); }
+  if (await save(t("deleted"))){ closeEditor(); renderMenu(); } else { menu = before; renderMenu(); }
 });
 
-/* ── الحفظ: يُرسل المنيو كاملاً ── */
+/* الحفظ: يُرسل المنيو كاملاً مع الإعدادات */
 async function save(okMsg, quiet){
   if (!quiet) $("busy").hidden = false;
   try {
     const r = await api("api/save", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(menu) });
     if (r.status === 401){ sessionExpired(); return false; }
-    if (!r.ok) throw new Error((await r.json().catch(() => ({}))).detail || r.status);
-    const d = await r.json();
-    $("status").textContent = "آخر حفظ: " + new Date(d.savedAt).toLocaleString("fr-FR", { dateStyle: "short", timeStyle: "short" }) + " · يظهر في المنيو خلال ثوانٍ.";
-    toast(okMsg);
-    return true;
-  } catch (e) {
-    toast("لم يُحفظ. تحقق من الاتصال وحاول مرة أخرى.", true);
-    return false;
-  } finally { if (!quiet) $("busy").hidden = true; }
+    if (!r.ok) throw 0;
+    savedAt = (await r.json()).savedAt; isOriginal = false; renderStatus();
+    toast(okMsg); return true;
+  } catch { toast(t("notSaved"), true); return false; }
+  finally { if (!quiet) $("busy").hidden = true; }
 }
-function sessionExpired(){ toast("انتهت صلاحية الدخول، سجّل الدخول مرة أخرى.", true); setTimeout(() => location.reload(), 1800); return false; }
 
+/* ═══════════ الإعدادات: رقم واتساب ═══════════ */
+$("waSave").addEventListener("click", async () => {
+  const v = $("waInput").value.replace(/\D/g, "");
+  if (!/^\d{8,15}$/.test(v)){ $("waErr").textContent = t("waBad"); $("waInput").focus(); return; }
+  $("waErr").textContent = "";
+  const before = menu.whatsapp; menu.whatsapp = v;
+  if (await save(t("waSaved"))) $("waInput").value = v; else menu.whatsapp = before;
+});
+
+applyLang();
 start();
 </script>
 </body>

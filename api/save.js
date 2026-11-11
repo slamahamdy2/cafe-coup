@@ -32,7 +32,10 @@ function clean(body) {
   });
   const gp = price(body.gamesPassPrice);
   if (gp === null) throw new Error("bad-games-price");
-  return { items, gamesPassPrice: gp, savedAt: new Date().toISOString() };
+  // رقم واتساب المقهى: أرقام فقط بالصيغة الدولية (مثل 22234522229)
+  const wa = String(body.whatsapp ?? "22234522229").replace(/\D/g, "");
+  if (!/^\d{8,15}$/.test(wa)) throw new Error("bad-whatsapp");
+  return { items, gamesPassPrice: gp, whatsapp: wa, savedAt: new Date().toISOString() };
 }
 
 export async function POST(request) {

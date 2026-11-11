@@ -335,7 +335,7 @@ button{font:inherit;color:inherit;cursor:pointer}
 const MENU = (window.COUP_DEFAULT ? window.COUP_DEFAULT.items : []).map(x => ({ ...x }));
 const CURRENCY = "MRU";
 // رقم واتساب المقهى (بالصيغة الدولية، أرقام فقط) — إليه تُرسل الطلبات
-const WHATSAPP = "22234522229";
+let WHATSAPP = "22234522229";   // يُستبدل بالرقم المحفوظ في لوحة صاحب المقهى
 // الألعاب: لا سعر لكل لعبة. سعر واحد للشخص، والعب ما تشاء بوقت مفتوح
 const GAMES_PASS = { price: (window.COUP_DEFAULT && window.COUP_DEFAULT.gamesPassPrice) || 200,
   ar: "للشخص · العب كل الألعاب التي تريدها بوقت مفتوح",
@@ -350,13 +350,13 @@ const T = {
         table:"رقم الطاولة", close:"إغلاق", waiterTitle:"طلب جديد", tableShort:"طاولة", all:"كل الأصناف", addOne:"أضف", less:"أنقص",
         persons:"شخص", each:"للواحد", sections:{ drinks:"المشروبات", food:"الطعام", games:"الألعاب" },
         sendWa:"إرسال الطلب عبر واتساب", waHello:"مرحباً، أريد أن أطلب:",
-        needTable:"اكتب رقم الطاولة أولاً حتى نرسل الطلب." },
+        needTable:"اكتب رقم الطاولة أولاً حتى نرسل الطلب.", code:"رمز الطلب" },
   fr: { add:"Ajouter à la commande", addGame:"Ajouter un joueur", added:"Ajouté ✓", myOrder:"Ma commande", total:"Total",
         showWaiter:"Montrer au serveur", clear:"Vider la commande", confirmClear:"Vider toute la commande ?", empty:"Votre commande est vide. Touchez « Ajouter à la commande » sous un article.",
         table:"Numéro de table", close:"Fermer", waiterTitle:"Nouvelle commande", tableShort:"Table", all:"Tous les articles", addOne:"Ajouter", less:"Retirer",
         persons:"pers.", each:"l'unité", sections:{ drinks:"Boissons", food:"Plats", games:"Jeux" },
         sendWa:"Envoyer la commande sur WhatsApp", waHello:"Bonjour, je voudrais commander :",
-        needTable:"Indiquez d'abord le numéro de table pour envoyer la commande." },
+        needTable:"Indiquez d'abord le numéro de table pour envoyer la commande.", code:"Code commande" },
 };
 
 /* ═══ الطلب: يُحفظ في الهاتف حتى لا يضيع عند تحديث الصفحة ═══ */
@@ -521,6 +521,7 @@ function addToOrder(p){
 }
 function setQty(k, q){
   if (q <= 0) delete order[k]; else order[k] = q;
+  if (!Object.keys(order).length) resetOrderCode();   // طلب فارغ ← الطلب القادم برمز جديد
   saveOrder(); renderOrder();
 }
 let addTimer;
@@ -596,8 +597,30 @@ $("sheetClose").addEventListener("click", closeSheet);
 els.sheetBack.addEventListener("click", closeSheet);
 $("clearOrder").addEventListener("click", () => {
   if (!confirm(T[lang].confirmClear)) return;
-  order = {}; saveOrder(); renderOrder();
+  order = {}; saveOrder(); resetOrderCode(); renderOrder();
 });
+
+/* رمز الطلب: 4 أحرف تميّز طلب هذه الطاولة في لوحة صاحب المقهى (يتجدد عند إفراغ الطلب) */
+function orderCode(){
+  let c = store.get("coup-code");
+  if (!/^[A-Z0-9]{4,8}$/.test(c || "")){
+    const A = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+    c = Array.from(crypto.getRandomValues(new Uint8Array(4)), b => A[b % A.length]).join("");
+    store.set("coup-code", c);
+  }
+  return c;
+}
+function resetOrderCode(){ store.set("coup-code", ""); }
+// تسجيل الطلب في لوحة صاحب المقهى (لا يؤخر واتساب، ولا يوقفه إن فشل)
+function recordOrder(){
+  const t = els.table.value.trim(); if (!t) return;
+  const lines = orderLines().map(({ k, item, q }) => ({ id: k, q, name_ar: item.name_ar, name_fr: item.name_fr, price: item.price }));
+  if (!lines.length) return;
+  try {
+    fetch(`${API_BASE}/api/orders`, { method: "POST", keepalive: true, headers: { "content-type": "application/json" },
+      body: JSON.stringify({ code: orderCode(), table: t, lang, lines }) }).catch(() => {});
+  } catch (e) {}
+}
 
 /* إرسال الطلب إلى واتساب المقهى: رسالة جاهزة فيها الطاولة والأصناف والمجموع */
 function whatsappMessage(){
@@ -608,6 +631,7 @@ function whatsappMessage(){
     "☕ Cafe Coup",
     L.waHello,
     t ? `${L.table}: ${t}` : null,
+    `${L.code}: ${orderCode()}`,
     "",
     ...rows,
     "",
@@ -629,6 +653,7 @@ $("sendWa").addEventListener("click", () => {
     return;
   }
   tableError(false);
+  recordOrder();
   const url = `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(whatsappMessage())}`;
   window.open(url, "_blank", "noopener");
 });
@@ -648,7 +673,8 @@ function openWaiter(){
   $("wTime").textContent = new Date().toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
   const t = els.table.value.trim();
   $("wTable").hidden = !t;
-  $("wTable").textContent = t ? `${T[lang].tableShort} ${t}` : "";
+  $("wTable").textContent = t ? `${T[lang].tableShort} ${t} · ${orderCode()}` : "";
+  recordOrder();
   $("wLines").innerHTML = lines.map(({ item, q }) => `
     <li class="w-line">
       <span class="w-q" dir="ltr">${q}×</span>
@@ -798,9 +824,11 @@ const API_BASE = /github\.io$/i.test(location.hostname) ? "https://cafe-coup.ver
     if (!r.ok) return;
     const data = await r.json();
     if (!data || !Array.isArray(data.items) || !data.items.length) return;
+    if (/^\d{8,15}$/.test(data.whatsapp || "")) WHATSAPP = data.whatsapp;
     if (JSON.stringify(data.items) === JSON.stringify(MENU) && data.gamesPassPrice === GAMES_PASS.price) return;
     MENU.splice(0, MENU.length, ...data.items);
     if (Number.isFinite(data.gamesPassPrice)) GAMES_PASS.price = PASS_ITEM.price = data.gamesPassPrice;
+    if (/^\d{8,15}$/.test(data.whatsapp || "")) WHATSAPP = data.whatsapp;
     const cur = list()[index];
     buildStage(Math.max(0, cur ? list().findIndex(p => p.id === cur.id) : 0));
     renderOrder();
