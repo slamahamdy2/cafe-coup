@@ -163,6 +163,11 @@ button{font:inherit;color:inherit;cursor:pointer}
 .x svg{width:16px;height:16px}
 .table{display:flex;align-items:center;gap:10px;margin:10px 0 4px;font-family:"Tajawal",sans-serif;font-weight:500;font-size:15px;color:#8A5A3B}
 .table input{width:84px;border:1px solid var(--line);border-radius:12px;background:#FFF8EE;padding:8px 10px;font:inherit;font-size:17px;color:var(--ink);text-align:center}
+/* رقم الطاولة إلزامي قبل الإرسال إلى واتساب */
+.table span::after{content:" *";color:#B3412E}
+.table input.invalid{border-color:#B3412E;box-shadow:0 0 0 3px rgba(179,65,46,.18);animation:shake .4s}
+@keyframes shake{20%,60%{transform:translateX(-5px)}40%,80%{transform:translateX(5px)}}
+.table-err{margin:2px 0 4px;font-family:"Tajawal",sans-serif;font-weight:500;font-size:14px;color:#B3412E}
 .lines{list-style:none;margin:6px 0 0;padding:0;overflow:auto;flex:1;min-height:0}
 .line{display:grid;grid-template-columns:48px 1fr auto;gap:10px 12px;align-items:center;padding:10px 0;border-bottom:1px dashed var(--line)}
 .line img{width:48px;height:48px;object-fit:contain}
@@ -297,7 +302,8 @@ button{font:inherit;color:inherit;cursor:pointer}
     <h2 id="sheetTitle"></h2>
     <button class="x" id="sheetClose" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
   </div>
-  <label class="table"><span id="tableLabel"></span><input id="tableInput" inputmode="numeric" maxlength="4" autocomplete="off"></label>
+  <label class="table"><span id="tableLabel"></span><input id="tableInput" inputmode="numeric" maxlength="4" autocomplete="off" required aria-describedby="tableErr"></label>
+  <p class="table-err" id="tableErr" role="alert" hidden></p>
   <ul class="lines" id="lines"></ul>
   <div class="sum"><span id="sumLabel"></span><span><bdi class="amt" id="sumAmt">0</bdi><span class="cur">MRU</span></span></div>
   <div class="sheet-actions">
@@ -390,12 +396,14 @@ const T = {
         showWaiter:"اعرض الطلب للنادل", clear:"إفراغ الطلب", confirmClear:"هل تريد إفراغ الطلب كله؟", empty:"طلبك فارغ. اضغط «أضف إلى الطلب» تحت أي صنف.",
         table:"رقم الطاولة", close:"إغلاق", waiterTitle:"طلب جديد", tableShort:"طاولة", all:"كل الأصناف", addOne:"أضف", less:"أنقص",
         persons:"شخص", each:"للواحد", sections:{ drinks:"المشروبات", food:"الطعام", games:"الألعاب" },
-        sendWa:"إرسال الطلب عبر واتساب", waHello:"مرحباً، أريد أن أطلب:" },
+        sendWa:"إرسال الطلب عبر واتساب", waHello:"مرحباً، أريد أن أطلب:",
+        needTable:"اكتب رقم الطاولة أولاً حتى نرسل الطلب." },
   fr: { add:"Ajouter à la commande", addGame:"Ajouter un joueur", added:"Ajouté ✓", myOrder:"Ma commande", total:"Total",
         showWaiter:"Montrer au serveur", clear:"Vider la commande", confirmClear:"Vider toute la commande ?", empty:"Votre commande est vide. Touchez « Ajouter à la commande » sous un article.",
         table:"Numéro de table", close:"Fermer", waiterTitle:"Nouvelle commande", tableShort:"Table", all:"Tous les articles", addOne:"Ajouter", less:"Retirer",
         persons:"pers.", each:"l'unité", sections:{ drinks:"Boissons", food:"Plats", games:"Jeux" },
-        sendWa:"Envoyer la commande sur WhatsApp", waHello:"Bonjour, je voudrais commander :" },
+        sendWa:"Envoyer la commande sur WhatsApp", waHello:"Bonjour, je voudrais commander :",
+        needTable:"Indiquez d'abord le numéro de table pour envoyer la commande." },
 };
 
 /* ═══ الطلب: يُحفظ في الهاتف حتى لا يضيع عند تحديث الصفحة ═══ */
@@ -560,6 +568,7 @@ function renderOrder(){
   $("clearOrder").textContent = T[lang].clear;
   $("clearOrder").hidden = n === 0;
   $("sendWaLabel").textContent = T[lang].sendWa;
+  if (!$("tableErr").hidden) $("tableErr").textContent = T[lang].needTable;
   $("sendWa").hidden = n === 0;
   const lines = orderLines();
   els.lines.innerHTML = lines.length ? lines.map(({ k, item, q }) => {
@@ -618,8 +627,21 @@ function whatsappMessage(){
     `${L.total}: ${orderTotal()} ${CURRENCY}`,
   ].filter(x => x !== null).join("\n");
 }
+function tableError(show){
+  els.table.classList.toggle("invalid", show);
+  els.table.setAttribute("aria-invalid", show);
+  $("tableErr").hidden = !show;
+  $("tableErr").textContent = show ? T[lang].needTable : "";
+}
 $("sendWa").addEventListener("click", () => {
   if (!orderLines().length) return;
+  // رقم الطاولة إلزامي: بدونه لا يُرسل الطلب
+  if (!els.table.value.trim()){
+    els.table.classList.remove("invalid"); void els.table.offsetWidth;
+    tableError(true); els.table.focus();
+    return;
+  }
+  tableError(false);
   const url = `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(whatsappMessage())}`;
   window.open(url, "_blank", "noopener");
 });
@@ -629,6 +651,7 @@ els.table.value = store.get("coup-table") || "";
 els.table.addEventListener("input", () => {
   els.table.value = els.table.value.replace(/[^0-9٠-٩]/g, "").slice(0, 4);
   store.set("coup-table", els.table.value);
+  if (els.table.value) tableError(false);
 });
 
 /* شاشة النادل: كبيرة، بالاسمين العربي والفرنسي */
