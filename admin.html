@@ -488,7 +488,7 @@ const TX = {
     statCount:"عدد الطلبات", statPaid:"مدفوع (MRU)", statUnpaid:"لم يُدفع بعد (MRU)",
     all:"الكل", st_new:"جديد", st_served:"قُدِّم", st_paid:"مدفوع", st_cancelled:"ملغى",
     noOrders:"لا توجد طلبات بعد. ستظهر هنا تلقائياً عندما يرسل زبون طلبه.", noArchive:"لا يوجد أرشيف بعد.",
-    table:"طاولة", code:"رمز", total:"المجموع", ordersN:n => `${n} طلب`, newOrder:n => `طلب جديد رقم ${n} 🔔`,
+    table:"طاولة", code:"رمز", total:"المجموع", ordersN:n => `${n} طلب`, newOrder:n => `طلب جديد رقم ${n} 🔔`, updatedOrder:n => `الطلب رقم ${n} عُدِّل 🔔`,
     markServed:"قُدِّم للزبون", markPaid:"تم الدفع", markCancel:"إلغاء", markNew:"إرجاع إلى جديد", statusSaved:"تم تحديث الطلب ✓",
     ordersDbMissing:"قاعدة الطلبات غير مفعّلة بعد.",
     secDrinks:"مشروبات", secFood:"طعام", secGames:"ألعاب", passLabel:"سعر الألعاب للشخص (وقت مفتوح) — MRU", save:"حفظ", cancel:"إلغاء",
@@ -533,7 +533,7 @@ const TX = {
     statCount:"Commandes", statPaid:"Payé (MRU)", statUnpaid:"Non payé (MRU)",
     all:"Toutes", st_new:"Nouvelle", st_served:"Servie", st_paid:"Payée", st_cancelled:"Annulée",
     noOrders:"Aucune commande pour l'instant. Elles s'afficheront ici automatiquement.", noArchive:"Pas encore d'archives.",
-    table:"Table", code:"Code", total:"Total", ordersN:n => `${n} commande${n > 1 ? "s" : ""}`, newOrder:n => `Nouvelle commande n° ${n} 🔔`,
+    table:"Table", code:"Code", total:"Total", ordersN:n => `${n} commande${n > 1 ? "s" : ""}`, newOrder:n => `Nouvelle commande n° ${n} 🔔`, updatedOrder:n => `Commande n° ${n} modifiée 🔔`,
     markServed:"Servie", markPaid:"Payée", markCancel:"Annuler", markNew:"Remettre en nouvelle", statusSaved:"Commande mise à jour ✓",
     ordersDbMissing:"La base des commandes n'est pas encore activée.",
     secDrinks:"Boissons", secFood:"Plats", secGames:"Jeux", passLabel:"Prix des jeux par personne (temps illimité) — MRU", save:"Enregistrer", cancel:"Annuler",
@@ -691,13 +691,15 @@ async function loadOrders(silent){
     if (!r.ok){ ordersErr = String(d.detail || "").includes("not-configured") ? t("ordersDbMissing") : t("loadFail"); renderOrders(); return; }
     ordersErr = "";
     todayDay = d.today; orderDay = d.day;
-    // تنبيه عند وصول طلب جديد
-    const ids = new Set(d.orders.map(o => o.id));
+    // تنبيه عند وصول طلب جديد، أو عندما يعدّل الزبون طلباً ما زال «جديداً»
+    const seen = new Map(d.orders.map(o => [o.id, o.updatedAt]));
     const fresh = knownIds && d.day === todayDay ? d.orders.filter(o => !knownIds.has(o.id)) : [];
-    knownIds = d.day === todayDay ? ids : knownIds;
+    const changed = knownIds && d.day === todayDay ? d.orders.filter(o => knownIds.has(o.id) && knownIds.get(o.id) !== o.updatedAt && o.status === "new") : [];
+    knownIds = d.day === todayDay ? seen : knownIds;
     orders = d.orders; summary = d.summary;
-    renderOrders(fresh.map(o => o.id));
+    renderOrders([...fresh, ...changed].map(o => o.id));
     if (fresh.length){ toast(t("newOrder", fresh[0].no)); beep(); }
+    else if (changed.length){ toast(t("updatedOrder", changed[0].no)); beep(); }
   } catch { if (!silent) toast(t("loadFail"), true); }
 }
 function beep(){

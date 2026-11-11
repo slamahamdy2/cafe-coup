@@ -141,6 +141,12 @@ button{font:inherit;color:inherit;cursor:pointer}
   background:var(--ink);color:var(--bg);border:0;border-radius:999px;padding:9px 22px 9px 9px;
   box-shadow:0 18px 40px -12px rgba(30,14,6,.55);transform:translate(-50%, 160%);transition:transform .5s var(--ease)}
 [dir=rtl] .cartbar{padding:9px 9px 9px 22px}
+/* تأكيد إرسال الطلب */
+.sent-note{position:fixed;left:50%;bottom:max(16px, env(safe-area-inset-bottom));z-index:55;transform:translate(-50%,160%);
+  width:min(440px, calc(100% - 32px));background:#3F7A3A;color:#fff;border-radius:999px;padding:14px 20px 11px;text-align:center;
+  font-size:17px;line-height:1.2;box-shadow:0 18px 40px -12px rgba(30,14,6,.55);transition:transform .5s var(--ease)}
+.sent-note.show{transform:translate(-50%,0)}
+.sent-note:not(.show){visibility:hidden;transition:transform .5s var(--ease), visibility 0s .5s}
 .cartbar.show{transform:translate(-50%, 0)}
 .cartbar:not(.show){visibility:hidden;transition:transform .5s var(--ease), visibility 0s .5s}
 .cartbar.bump{animation:bump .45s var(--ease)}
@@ -283,6 +289,7 @@ button{font:inherit;color:inherit;cursor:pointer}
 </section>
 
 <!-- شريط الطلب: يظهر عند إضافة أول صنف -->
+<div class="sent-note" id="sentNote" role="status" aria-live="polite"></div>
 <button class="cartbar" id="cartbar" type="button" aria-haspopup="dialog">
   <span class="cb-count" id="cbCount">0</span>
   <span class="cb-label" id="cbLabel"></span>
@@ -350,13 +357,13 @@ const T = {
         table:"رقم الطاولة", close:"إغلاق", waiterTitle:"طلب جديد", tableShort:"طاولة", all:"كل الأصناف", addOne:"أضف", less:"أنقص",
         persons:"شخص", each:"للواحد", sections:{ drinks:"المشروبات", food:"الطعام", games:"الألعاب" },
         sendWa:"إرسال الطلب عبر واتساب", waHello:"مرحباً، أريد أن أطلب:",
-        needTable:"اكتب رقم الطاولة أولاً حتى نرسل الطلب.", code:"رمز الطلب" },
+        needTable:"اكتب رقم الطاولة أولاً حتى نرسل الطلب.", code:"رمز الطلب", sent:"✓ أُرسل طلبك" },
   fr: { add:"Ajouter à la commande", addGame:"Ajouter un joueur", added:"Ajouté ✓", myOrder:"Ma commande", total:"Total",
         showWaiter:"Montrer au serveur", clear:"Vider la commande", confirmClear:"Vider toute la commande ?", empty:"Votre commande est vide. Touchez « Ajouter à la commande » sous un article.",
         table:"Numéro de table", close:"Fermer", waiterTitle:"Nouvelle commande", tableShort:"Table", all:"Tous les articles", addOne:"Ajouter", less:"Retirer",
         persons:"pers.", each:"l'unité", sections:{ drinks:"Boissons", food:"Plats", games:"Jeux" },
         sendWa:"Envoyer la commande sur WhatsApp", waHello:"Bonjour, je voudrais commander :",
-        needTable:"Indiquez d'abord le numéro de table pour envoyer la commande.", code:"Code commande" },
+        needTable:"Indiquez d'abord le numéro de table pour envoyer la commande.", code:"Code commande", sent:"✓ Commande envoyée" },
 };
 
 /* ═══ الطلب: يُحفظ في الهاتف حتى لا يضيع عند تحديث الصفحة ═══ */
@@ -616,9 +623,13 @@ function recordOrder(){
   const t = els.table.value.trim(); if (!t) return;
   const lines = orderLines().map(({ k, item, q }) => ({ id: k, q, name_ar: item.name_ar, name_fr: item.name_fr, price: item.price }));
   if (!lines.length) return;
+  const body = JSON.stringify({ code: orderCode(), table: t, lang, lines });
+  // sendBeacon يكمل الإرسال حتى لو انتقل الهاتف فوراً إلى تطبيق واتساب
   try {
-    fetch(`${API_BASE}/api/orders`, { method: "POST", keepalive: true, headers: { "content-type": "application/json" },
-      body: JSON.stringify({ code: orderCode(), table: t, lang, lines }) }).catch(() => {});
+    if (navigator.sendBeacon && navigator.sendBeacon(`${API_BASE}/api/orders`, new Blob([body], { type: "text/plain;charset=UTF-8" }))) return;
+  } catch (e) {}
+  try {
+    fetch(`${API_BASE}/api/orders`, { method: "POST", keepalive: true, headers: { "content-type": "text/plain;charset=UTF-8" }, body }).catch(() => {});
   } catch (e) {}
 }
 
@@ -654,9 +665,22 @@ $("sendWa").addEventListener("click", () => {
   }
   tableError(false);
   recordOrder();
+  const code = orderCode();
   const url = `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(whatsappMessage())}`;
   window.open(url, "_blank", "noopener");
+  // الطلب أُرسل: نُفرغ القائمة ونعطي الطلب القادم رمزاً جديداً، حتى لا يُدمج الطلب التالي مع هذا
+  order = {}; saveOrder(); resetOrderCode(); renderOrder();
+  closeSheet();
+  sentNotice(code);
 });
+
+/* تأكيد صغير بعد الإرسال */
+function sentNotice(code){
+  const n = $("sentNote");
+  n.textContent = `${T[lang].sent} · ${T[lang].code} ${code}`;
+  n.classList.add("show"); clearTimeout(n._t);
+  n._t = setTimeout(() => n.classList.remove("show"), 5000);
+}
 
 // رقم الطاولة: أرقام فقط، ويُحفظ
 els.table.value = store.get("coup-table") || "";
