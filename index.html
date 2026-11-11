@@ -199,6 +199,7 @@ button{font:inherit;color:inherit;cursor:pointer}
 .btn-wa:active{transform:scale(.97)}
 .btn-wa svg{width:22px;height:22px;margin-top:-3px}
 .btn-wa[hidden]{display:none}
+.btn-wa:disabled{opacity:.6;cursor:wait}
 .btn-link{border:0;background:none;color:#8A5A3B;padding:6px 10px 2px;font-size:15px;line-height:1;text-decoration:underline;text-underline-offset:4px;justify-self:center}
 
 /* شاشة النادل: كبيرة وواضحة */
@@ -357,13 +358,13 @@ const T = {
         table:"رقم الطاولة", close:"إغلاق", waiterTitle:"طلب جديد", tableShort:"طاولة", all:"كل الأصناف", addOne:"أضف", less:"أنقص",
         persons:"شخص", each:"للواحد", sections:{ drinks:"المشروبات", food:"الطعام", games:"الألعاب" },
         sendWa:"إرسال الطلب عبر واتساب", waHello:"مرحباً، أريد أن أطلب:",
-        needTable:"اكتب رقم الطاولة أولاً حتى نرسل الطلب.", code:"رمز الطلب", sent:"✓ أُرسل طلبك" },
+        needTable:"اكتب رقم الطاولة أولاً حتى نرسل الطلب.", code:"رمز الطلب", sent:"✓ أُرسل طلبك", sending:"جارٍ الإرسال…" },
   fr: { add:"Ajouter à la commande", addGame:"Ajouter un joueur", added:"Ajouté ✓", myOrder:"Ma commande", total:"Total",
         showWaiter:"Montrer au serveur", clear:"Vider la commande", confirmClear:"Vider toute la commande ?", empty:"Votre commande est vide. Touchez « Ajouter à la commande » sous un article.",
         table:"Numéro de table", close:"Fermer", waiterTitle:"Nouvelle commande", tableShort:"Table", all:"Tous les articles", addOne:"Ajouter", less:"Retirer",
         persons:"pers.", each:"l'unité", sections:{ drinks:"Boissons", food:"Plats", games:"Jeux" },
         sendWa:"Envoyer la commande sur WhatsApp", waHello:"Bonjour, je voudrais commander :",
-        needTable:"Indiquez d'abord le numéro de table pour envoyer la commande.", code:"Code commande", sent:"✓ Commande envoyée" },
+        needTable:"Indiquez d'abord le numéro de table pour envoyer la commande.", code:"Code commande", sent:"✓ Commande envoyée", sending:"Envoi…" },
 };
 
 /* ═══ الطلب: يُحفظ في الهاتف حتى لا يضيع عند تحديث الصفحة ═══ */
@@ -618,12 +619,25 @@ function orderCode(){
   return c;
 }
 function resetOrderCode(){ store.set("coup-code", ""); }
-// تسجيل الطلب في لوحة صاحب المقهى (لا يؤخر واتساب، ولا يوقفه إن فشل)
-function recordOrder(){
-  const t = els.table.value.trim(); if (!t) return;
+function orderBody(){
+  const t = els.table.value.trim(); if (!t) return null;
   const lines = orderLines().map(({ k, item, q }) => ({ id: k, q, name_ar: item.name_ar, name_fr: item.name_fr, price: item.price }));
-  if (!lines.length) return;
-  const body = JSON.stringify({ code: orderCode(), table: t, lang, lines });
+  return lines.length ? JSON.stringify({ code: orderCode(), table: t, lang, lines }) : null;
+}
+// تسجيل الطلب وانتظار تأكيد الخادم (حتى 6 ثوانٍ). يُرجع رقم الطلب، أو null إن فشل.
+async function saveOrderNow(){
+  const body = orderBody(); if (!body) return null;
+  const ctrl = new AbortController(), timer = setTimeout(() => ctrl.abort(), 6000);
+  try {
+    const r = await fetch(`${API_BASE}/api/orders`, { method: "POST", headers: { "content-type": "text/plain;charset=UTF-8" }, body, signal: ctrl.signal, cache: "no-store" });
+    const d = await r.json().catch(() => ({}));
+    return r.ok && d.ok ? d.no : null;
+  } catch (e) { return null; }
+  finally { clearTimeout(timer); }
+}
+// تسجيل الطلب في الخلفية (لشاشة النادل)
+function recordOrder(){
+  const body = orderBody(); if (!body) return;
   // sendBeacon يكمل الإرسال حتى لو انتقل الهاتف فوراً إلى تطبيق واتساب
   try {
     if (navigator.sendBeacon && navigator.sendBeacon(`${API_BASE}/api/orders`, new Blob([body], { type: "text/plain;charset=UTF-8" }))) return;
@@ -655,8 +669,9 @@ function tableError(show){
   $("tableErr").hidden = !show;
   $("tableErr").textContent = show ? T[lang].needTable : "";
 }
-$("sendWa").addEventListener("click", () => {
-  if (!orderLines().length) return;
+let sending = false;
+$("sendWa").addEventListener("click", async () => {
+  if (sending || !orderLines().length) return;
   // رقم الطاولة إلزامي: بدونه لا يُرسل الطلب
   if (!els.table.value.trim()){
     els.table.classList.remove("invalid"); void els.table.offsetWidth;
@@ -664,20 +679,35 @@ $("sendWa").addEventListener("click", () => {
     return;
   }
   tableError(false);
-  recordOrder();
   const code = orderCode();
   const url = `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(whatsappMessage())}`;
-  window.open(url, "_blank", "noopener");
-  // الطلب أُرسل: نُفرغ القائمة ونعطي الطلب القادم رمزاً جديداً، حتى لا يُدمج الطلب التالي مع هذا
+  // 1) نحفظ الطلب في لوحة صاحب المقهى وننتظر التأكيد
+  sending = true;
+  const btn = $("sendWa"); btn.disabled = true; $("sendWaLabel").textContent = T[lang].sending;
+  const no = await saveOrderNow();
+  sending = false; btn.disabled = false; $("sendWaLabel").textContent = T[lang].sendWa;
+  // 2) نُفرغ القائمة: الطلب القادم برمز جديد، فلا يُدمج مع هذا
   order = {}; saveOrder(); resetOrderCode(); renderOrder();
   closeSheet();
-  sentNotice(code);
+  sentNotice(code, no);
+  // 3) ثم نفتح واتساب (في نفس الصفحة: يعمل على كل الهواتف وداخل متصفح واتساب أيضاً)
+  window.openWhatsApp(url);
 });
+window.openWhatsApp = url => { location.href = url; };
+
+// صفحة بقيت مفتوحة في الخلفية أكثر من 20 دقيقة ← نعيد تحميلها لتأخذ آخر نسخة من المنيو
+let hiddenAt = 0;
+document.addEventListener("visibilitychange", () => {
+  if (document.hidden) hiddenAt = Date.now();
+  else if (hiddenAt && Date.now() - hiddenAt > 20 * 60 * 1000) location.reload();
+});
+const loadedAt = Date.now();
+addEventListener("pageshow", e => { if (e.persisted && Date.now() - loadedAt > 20 * 60 * 1000) location.reload(); });
 
 /* تأكيد صغير بعد الإرسال */
-function sentNotice(code){
+function sentNotice(code, no){
   const n = $("sentNote");
-  n.textContent = `${T[lang].sent} · ${T[lang].code} ${code}`;
+  n.textContent = `${T[lang].sent}${no ? ` · #${no}` : ""} · ${T[lang].code} ${code}`;
   n.classList.add("show"); clearTimeout(n._t);
   n._t = setTimeout(() => n.classList.remove("show"), 5000);
 }
