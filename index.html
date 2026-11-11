@@ -328,58 +328,16 @@ button{font:inherit;color:inherit;cursor:pointer}
   </div>
 </div>
 
+<script src="menu-data.js"></script>
 <script>
-/* ═══ المنيو — عدّل الأسماء والأسعار والصور من هنا ═══
+/* ═══ المنيو — يُعدَّل من لوحة صاحب المقهى (admin.html)، والقائمة الأصلية في menu-data.js ═══
    image: صورة PNG بخلفية شفافة داخل مجلد images */
-const MENU = [
-  { id:"iced-latte", section:"drinks", name_ar:"آيس لاتيه", name_fr:"Latte glacé",
-    desc_ar:"إسبريسو مزدوج مع حليب بارد وثلج", desc_fr:"Double espresso, lait frais et glaçons", price:120, image:"images/iced-latte.png" },
-  { id:"iced-mocha", section:"drinks", name_ar:"آيس موكا", name_fr:"Moka glacé",
-    desc_ar:"شوكولاتة داكنة، إسبريسو وحليب بارد", desc_fr:"Chocolat noir, espresso et lait froid", price:140, image:"images/iced-mocha.png" },
-  { id:"iced-americano", section:"drinks", name_ar:"آيس أمريكانو", name_fr:"Americano glacé",
-    desc_ar:"إسبريسو مركّز مع ماء بارد وثلج", desc_fr:"Espresso allongé sur glace", price:100, image:"images/iced-americano.png" },
-  { id:"mojito", section:"drinks", name_ar:"موهيتو", name_fr:"Mojito",
-    desc_ar:"نعناع طازج، ليمون أخضر وصودا", desc_fr:"Menthe fraîche, citron vert et soda", price:110, image:"images/mojito.png" },
-  { id:"blue-lemonade", section:"drinks", name_ar:"ليموناضة زرقاء", name_fr:"Limonade bleue",
-    desc_ar:"ليمون، توت أزرق وصودا منعشة", desc_fr:"Citron, myrtilles et soda pétillant", price:120, image:"images/blue-lemonade.png" },
-  { id:"mango", section:"drinks", name_ar:"عصير مانجو", name_fr:"Jus de mangue",
-    desc_ar:"مانجو طازجة مخفوقة مع قطع الفاكهة", desc_fr:"Mangue fraîche mixée, morceaux de fruit", price:100, image:"images/mango.png" },
-  { id:"banana-milk", section:"drinks", name_ar:"حليب بالموز", name_fr:"Lait banane",
-    desc_ar:"موز طازج مخفوق مع الحليب البارد", desc_fr:"Banane fraîche mixée au lait froid", price:90, image:"images/banana-milk.png" },
-
-  // ── الطعام ──
-  { id:"chocolate-cake", section:"food", name_ar:"كيك الشوكولاتة", name_fr:"Gâteau au chocolat",
-    desc_ar:"ثلاث طبقات من الكيك مع كريمة الشوكولاتة", desc_fr:"Trois couches de gâteau, crème au chocolat", price:150, image:"images/chocolate-cake.png" },
-  { id:"chicken-wrap", section:"food", name_ar:"راب الدجاج", name_fr:"Wrap au poulet",
-    desc_ar:"دجاج، بطاطس وصوص في خبز تورتيلا مشوي", desc_fr:"Poulet, frites et sauce dans une tortilla grillée", price:180, image:"images/chicken-wrap.png" },
-  { id:"club-sandwich", section:"food", name_ar:"كلوب ساندويتش", name_fr:"Club sandwich",
-    desc_ar:"خبز محمّص، جبن، طماطم وخس", desc_fr:"Pain toasté, fromage, tomate et salade", price:200, image:"images/club-sandwich.png" },
-
-  // ── الألعاب ──
-  { id:"uno", section:"games", name_ar:"أونو", name_fr:"UNO",
-    desc_ar:"لعبة الورق الملوّنة، من 2 إلى 10 لاعبين", desc_fr:"Le jeu de cartes coloré, de 2 à 10 joueurs", image:"images/uno.png" },
-  { id:"monopoly", section:"games", name_ar:"مونوبولي", name_fr:"Monopoly",
-    desc_ar:"اشترِ وبِع العقارات وكُن الأغنى", desc_fr:"Achetez, vendez et devenez le plus riche", image:"images/monopoly.png" },
-  { id:"jenga", section:"games", name_ar:"برج الخشب", name_fr:"Tour en bois",
-    desc_ar:"اسحب القطعة دون أن يسقط البرج", desc_fr:"Retirez un bloc sans faire tomber la tour", image:"images/jenga.png" },
-  { id:"chess", section:"games", name_ar:"شطرنج", name_fr:"Échecs",
-    desc_ar:"مباراة هادئة بين لاعبَين", desc_fr:"Une partie tranquille à deux", image:"images/chess.png" },
-  { id:"hedbanz", section:"games", name_ar:"هيدبانز", name_fr:"Hedbanz",
-    desc_ar:"خمّن ما على رأسك بالأسئلة", desc_fr:"Devinez ce qui est sur votre tête", image:"images/hedbanz.png" },
-  { id:"cockroach-poker", section:"games", name_ar:"بوكر الصراصير", name_fr:"Poker des cafards",
-    desc_ar:"خادِع خصمك بالبطاقات واكشف من يكذب", desc_fr:"Bluffez avec vos cartes et démasquez les menteurs", image:"images/cockroach-poker.png" },
-  { id:"loups-garous", section:"games", name_ar:"المستذئبون", name_fr:"Loups-Garous",
-    desc_ar:"لعبة جماعية: اكتشف المستذئبين بين اللاعبين", desc_fr:"Jeu de groupe : démasquez les loups-garous", image:"images/loups-garous.png" },
-  { id:"coup-game", section:"games", name_ar:"كو", name_fr:"Coup",
-    desc_ar:"هويات سرية، خداع وذكاء", desc_fr:"Identités secrètes, bluff et déduction", image:"images/coup-game.png" },
-  { id:"playing-cards", section:"games", name_ar:"ورق اللعب", name_fr:"Cartes à jouer",
-    desc_ar:"كوتشينة كلاسيكية لكل ألعابك المفضّلة", desc_fr:"Un jeu de cartes classique pour toutes vos parties", image:"images/playing-cards.png" },
-];
+const MENU = (window.COUP_DEFAULT ? window.COUP_DEFAULT.items : []).map(x => ({ ...x }));
 const CURRENCY = "MRU";
 // رقم واتساب المقهى (بالصيغة الدولية، أرقام فقط) — إليه تُرسل الطلبات
 const WHATSAPP = "22234522229";
 // الألعاب: لا سعر لكل لعبة. سعر واحد للشخص، والعب ما تشاء بوقت مفتوح
-const GAMES_PASS = { price: 200,
+const GAMES_PASS = { price: (window.COUP_DEFAULT && window.COUP_DEFAULT.gamesPassPrice) || 200,
   ar: "للشخص · العب كل الألعاب التي تريدها بوقت مفتوح",
   fr: "par personne · tous les jeux à volonté, sans limite de temps" };
 const priceOf = q => q.section === "games" ? GAMES_PASS.price : q.price;
@@ -489,7 +447,7 @@ const els = { stage:$("stage"), track:$("track"), prev:$("prev"), next:$("next")
               waiter:$("waiter"), table:$("tableInput") };
 const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)");
 let section = "drinks", index = 0, items = [];
-const list = () => MENU.filter(p => p.section === section);
+const list = () => MENU.filter(p => p.section === section && !p.hidden);   // الأصناف المخفية لا تظهر للزبائن
 const isRTL = () => lang === "ar";
 const other = () => lang === "ar" ? "fr" : "ar";
 const pad = n => String(n).padStart(2, "0");
@@ -829,6 +787,25 @@ document.querySelector(".lang").addEventListener("click", e => {
 });
 buildStage(0);
 applyLang();
+
+/* آخر نسخة من المنيو (كما حفظها صاحب المقهى في اللوحة).
+   إذا تعذّر الاتصال تبقى القائمة الأصلية من menu-data.js فلا يتعطل المنيو أبداً. */
+const API_BASE = /github\.io$/i.test(location.hostname) ? "https://cafe-coup.vercel.app" : "";
+(async () => {
+  try {
+    const ctrl = new AbortController(); setTimeout(() => ctrl.abort(), 6000);
+    const r = await fetch(`${API_BASE}/api/menu`, { signal: ctrl.signal, cache: "no-store" });
+    if (!r.ok) return;
+    const data = await r.json();
+    if (!data || !Array.isArray(data.items) || !data.items.length) return;
+    if (JSON.stringify(data.items) === JSON.stringify(MENU) && data.gamesPassPrice === GAMES_PASS.price) return;
+    MENU.splice(0, MENU.length, ...data.items);
+    if (Number.isFinite(data.gamesPassPrice)) GAMES_PASS.price = PASS_ITEM.price = data.gamesPassPrice;
+    const cur = list()[index];
+    buildStage(Math.max(0, cur ? list().findIndex(p => p.id === cur.id) : 0));
+    renderOrder();
+  } catch (e) { /* القائمة الأصلية تبقى */ }
+})();
 // إعادة الرسم بعد تحميل خط Amiri (canvas لا يعيد الرسم وحده)
 if (document.fonts){
   document.fonts.load('700 40px "Amiri"', "قهوة CAFÉ").then(fitRim, fitRim);

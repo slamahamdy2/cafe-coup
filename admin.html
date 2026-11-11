@@ -1,0 +1,440 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#F3EADB">
+<title>Cafe Coup — لوحة التحكم</title>
+<link rel="icon" href="images/logo-coup.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lalezar&family=Tajawal:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#F3EADB;--card:#FFF8EE;--ink:#3B2418;--muted:#8A5A3B;--line:rgba(59,36,24,.16);--ok:#3F7A3A;--bad:#B3412E;--ease:cubic-bezier(.2,.8,.2,1)}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;min-height:100vh;background:var(--bg);color:var(--ink);font-family:"Tajawal",system-ui,sans-serif;font-weight:500;font-size:16px}
+button,input,textarea,select{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--muted);outline-offset:2px}
+.h{font-family:"Lalezar",sans-serif;font-weight:400}
+[hidden]{display:none !important}
+.wrap{max-width:720px;margin:0 auto;padding:max(14px, env(safe-area-inset-top)) 16px 120px}
+
+/* الأعلى */
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.top img{height:38px}
+.top .actions{display:flex;gap:8px}
+.chip{border:1px solid var(--line);background:var(--card);border-radius:999px;padding:8px 14px;font-size:14px;text-decoration:none;color:var(--ink);display:inline-flex;align-items:center;gap:6px}
+h1{margin:14px 0 2px;font-size:30px}
+.sub{margin:0;color:var(--muted);font-size:14px}
+
+/* الدخول */
+.login{max-width:380px;margin:12vh auto 0;background:var(--card);border:1px solid var(--line);border-radius:24px;padding:28px 22px;text-align:center}
+.login img{height:56px}
+.login h1{margin-top:12px}
+.login form{display:grid;gap:12px;margin-top:18px}
+.field{display:grid;gap:6px;text-align:start}
+.field label{font-size:14px;color:var(--muted)}
+.input{width:100%;border:1px solid var(--line);border-radius:14px;background:#fff;padding:12px 14px;font-size:17px}
+textarea.input{min-height:72px;resize:vertical;line-height:1.5}
+.input:focus{border-color:var(--ink);outline:none;box-shadow:0 0 0 3px rgba(59,36,24,.12)}
+.err{color:var(--bad);font-size:14px;min-height:1em;margin:0}
+.btn{border:0;border-radius:999px;background:var(--ink);color:var(--bg);padding:14px 22px 12px;font-family:"Lalezar",sans-serif;font-size:19px;line-height:1}
+.btn:disabled{opacity:.45}
+.btn.ghost{background:none;color:var(--ink);border:1px solid var(--line)}
+.btn.danger{background:none;color:var(--bad);border:1px solid rgba(179,65,46,.35)}
+
+/* الأقسام */
+.tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;background:var(--card);border:1px solid var(--line);border-radius:999px;padding:5px;margin:18px 0 14px}
+.tab{border:0;background:none;border-radius:999px;padding:11px 6px 8px;font-family:"Lalezar",sans-serif;font-size:19px;line-height:1}
+.tab[aria-selected=true]{background:var(--ink);color:var(--bg)}
+.tab small{font-family:"Tajawal",sans-serif;font-size:12px;opacity:.7;margin-inline-start:4px}
+
+.pass{display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:12px 14px;margin-bottom:12px}
+.pass label{flex:1;min-width:160px}
+.pass .input{width:120px;text-align:center}
+
+.add{width:100%;display:flex;align-items:center;justify-content:center;gap:8px;border:2px dashed rgba(59,36,24,.35);background:none;border-radius:18px;padding:16px;font-family:"Lalezar",sans-serif;font-size:20px;line-height:1}
+.add svg{width:18px;height:18px;margin-top:-3px}
+
+/* القائمة */
+.list{list-style:none;margin:12px 0 0;padding:0;display:grid;gap:10px}
+.row{display:grid;grid-template-columns:64px 1fr auto;gap:12px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:10px 12px}
+.row.off{opacity:.55}
+.row .thumb{width:64px;height:64px;border-radius:12px;background:#F7EFE2;display:grid;place-items:center;overflow:hidden}
+.row .thumb img{max-width:100%;max-height:100%;object-fit:contain}
+.row .main{min-width:0;border:0;background:none;text-align:start;padding:0}
+.row .n{font-family:"Lalezar",sans-serif;font-size:19px;line-height:1.2;display:block}
+.row .f{font-size:13px;color:var(--muted);display:block;direction:ltr;text-align:start}
+html[dir=rtl] .row .f{text-align:right}
+.row .p{font-size:15px;margin-top:4px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.tag{font-size:12px;border-radius:999px;padding:2px 9px;background:rgba(179,65,46,.12);color:var(--bad)}
+.move{display:grid;gap:4px}
+.move button{width:34px;height:30px;border-radius:10px;border:1px solid var(--line);background:#fff;display:grid;place-items:center}
+.move button:disabled{opacity:.3}
+.move svg{width:14px;height:14px}
+
+/* نافذة التعديل */
+.back{position:fixed;inset:0;background:rgba(30,14,6,.45);z-index:40;opacity:0;visibility:hidden;transition:opacity .25s,visibility .25s}
+.back.open{opacity:1;visibility:visible}
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:41;max-width:640px;margin:0 auto;max-height:92vh;overflow:auto;background:var(--bg);
+  border-radius:26px 26px 0 0;padding:10px 18px max(18px, env(safe-area-inset-bottom));transform:translateY(105%);transition:transform .4s var(--ease);visibility:hidden}
+.sheet.open{transform:none;visibility:visible}
+.grab{width:44px;height:5px;border-radius:5px;background:var(--line);margin:4px auto 8px}
+.sheet h2{margin:0 0 12px;font-size:26px}
+.form{display:grid;gap:14px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media (max-width:420px){.two{grid-template-columns:1fr}}
+.photo{display:grid;grid-template-columns:110px 1fr;gap:14px;align-items:center}
+.photo .pv{width:110px;height:110px;border-radius:18px;background:#F7EFE2 repeating-conic-gradient(#efe4d2 0 25%, transparent 0 50%) 0 0/18px 18px;display:grid;place-items:center;overflow:hidden;border:1px solid var(--line)}
+.photo .pv img{max-width:100%;max-height:100%;object-fit:contain}
+.photo .hint{font-size:13px;color:var(--muted);margin:6px 0 0;line-height:1.5}
+.filebtn{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--ink);border-radius:999px;padding:10px 16px;background:#fff;font-size:15px}
+.switch{display:flex;align-items:center;justify-content:space-between;gap:12px;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:12px 14px}
+.switch input{width:22px;height:22px;accent-color:var(--ink)}
+.bar{display:grid;grid-template-columns:1fr auto;gap:10px;margin-top:4px}
+.fr{direction:ltr}
+html[dir=rtl] .fr{text-align:left}
+
+/* إشعار */
+.toast{position:fixed;left:50%;bottom:max(18px, env(safe-area-inset-bottom));transform:translate(-50%,150%);z-index:60;
+  background:var(--ink);color:var(--bg);border-radius:999px;padding:12px 20px 10px;font-size:15px;box-shadow:0 14px 30px -12px rgba(30,14,6,.6);
+  transition:transform .4s var(--ease);max-width:calc(100% - 32px);text-align:center}
+.toast.show{transform:translate(-50%,0)}
+.toast:not(.show){visibility:hidden;transition:transform .4s var(--ease), visibility 0s .4s}
+.toast.bad{background:var(--bad)}
+.busy{position:fixed;inset:0;z-index:70;background:rgba(243,234,219,.6);display:grid;place-items:center;font-family:"Lalezar",sans-serif;font-size:22px}
+</style>
+</head>
+<body>
+
+<!-- 1) الدخول -->
+<section class="login" id="loginView" hidden>
+  <img src="images/logo-coup.png" alt="Cafe Coup">
+  <h1 class="h">لوحة صاحب المقهى</h1>
+  <p class="sub">هذه الصفحة خاصة. اكتب كلمة السر للدخول.</p>
+  <form id="loginForm">
+    <div class="field">
+      <label for="pw">كلمة السر</label>
+      <input class="input" id="pw" type="password" autocomplete="current-password" required>
+    </div>
+    <p class="err" id="loginErr" role="alert"></p>
+    <button class="btn" type="submit" id="loginBtn">دخول</button>
+  </form>
+</section>
+
+<!-- 2) اللوحة -->
+<main class="wrap" id="appView" hidden>
+  <div class="top">
+    <img src="images/logo-coup.png" alt="Cafe Coup">
+    <div class="actions">
+      <a class="chip" href="./" target="_blank" rel="noopener">فتح المنيو ↗</a>
+      <button class="chip" type="button" id="logout">خروج</button>
+    </div>
+  </div>
+  <h1 class="h">لوحة التحكم</h1>
+  <p class="sub" id="status">كل تعديل تحفظه يظهر في المنيو خلال ثوانٍ.</p>
+
+  <div class="tabs" role="tablist" id="tabs">
+    <button class="tab" role="tab" data-sec="drinks">مشروبات<small></small></button>
+    <button class="tab" role="tab" data-sec="food">طعام<small></small></button>
+    <button class="tab" role="tab" data-sec="games">ألعاب<small></small></button>
+  </div>
+
+  <div class="pass" id="passBox" hidden>
+    <label for="passPrice">سعر الألعاب للشخص (وقت مفتوح) — MRU</label>
+    <input class="input" id="passPrice" type="number" inputmode="numeric" min="0" step="1">
+    <button class="btn" type="button" id="passSave">حفظ</button>
+  </div>
+
+  <button class="add" type="button" id="addBtn">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+    <span id="addLabel">إضافة صنف جديد</span>
+  </button>
+  <ul class="list" id="list"></ul>
+</main>
+
+<!-- نافذة إضافة / تعديل صنف -->
+<div class="back" id="back"></div>
+<div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
+  <div class="grab"></div>
+  <h2 class="h" id="sheetTitle"></h2>
+  <form class="form" id="itemForm" novalidate>
+    <div class="photo">
+      <div class="pv" id="pv"><span class="sub">لا صورة</span></div>
+      <div>
+        <label class="filebtn" for="file">📷 <span id="fileLabel">اختيار صورة</span></label>
+        <input id="file" type="file" accept="image/png,image/jpeg,image/webp" hidden>
+        <p class="hint">الأفضل صورة PNG بخلفية شفافة (المنتج وحده بدون خلفية).</p>
+      </div>
+    </div>
+
+    <div class="field">
+      <label for="fSection">القسم</label>
+      <select class="input" id="fSection">
+        <option value="drinks">مشروبات</option>
+        <option value="food">طعام</option>
+        <option value="games">ألعاب</option>
+      </select>
+    </div>
+
+    <div class="two">
+      <div class="field"><label for="fNameAr">الاسم بالعربية *</label><input class="input" id="fNameAr" maxlength="80"></div>
+      <div class="field"><label for="fNameFr">الاسم بالفرنسية</label><input class="input fr" id="fNameFr" maxlength="80" lang="fr"></div>
+    </div>
+    <div class="field"><label for="fDescAr">الوصف بالعربية</label><textarea class="input" id="fDescAr" maxlength="240"></textarea></div>
+    <div class="field"><label for="fDescFr">الوصف بالفرنسية</label><textarea class="input fr" id="fDescFr" maxlength="240" lang="fr"></textarea></div>
+    <div class="field" id="priceField"><label for="fPrice">السعر (MRU) *</label><input class="input" id="fPrice" type="number" inputmode="numeric" min="0" step="1"></div>
+
+    <label class="switch"><span>متوفر الآن (يظهر للزبائن)</span><input type="checkbox" id="fShown"></label>
+
+    <p class="err" id="formErr" role="alert"></p>
+    <div class="bar">
+      <button class="btn" type="submit" id="saveBtn">حفظ</button>
+      <button class="btn ghost" type="button" id="cancelBtn">إلغاء</button>
+    </div>
+    <button class="btn danger" type="button" id="deleteBtn">حذف هذا الصنف نهائياً</button>
+  </form>
+</div>
+
+<div class="toast" id="toast" role="status"></div>
+<div class="busy" id="busy" hidden>جارٍ الحفظ…</div>
+
+<script src="menu-data.js"></script>
+<script>
+const $ = id => document.getElementById(id);
+const H = { "x-coup-admin": "1" };
+const SEC_NAME = { drinks: "مشروبات", food: "طعام", games: "ألعاب" };
+let menu = { items: [], gamesPassPrice: 200 };
+let section = "drinks";
+let editing = null;      // الصنف الذي يُعدّل (null = جديد)
+let pendingImage = null; // صورة جديدة اختيرت ولم تُرفع بعد
+
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c]));
+function toast(msg, bad){
+  const t = $("toast"); t.textContent = msg; t.classList.toggle("bad", !!bad);
+  t.classList.add("show"); clearTimeout(t._t); t._t = setTimeout(() => t.classList.remove("show"), bad ? 4500 : 2600);
+}
+const api = (path, opts = {}) => fetch(path, { credentials: "same-origin", ...opts, headers: { ...H, ...(opts.headers || {}) } });
+
+/* ── الدخول ── */
+async function start(){
+  let s = { authed: false, configured: true };
+  try { s = await (await api("api/login")).json(); } catch {}
+  if (!s.authed){
+    $("loginView").hidden = false; $("appView").hidden = true;
+    if (s.configured === false){ $("loginErr").textContent = "لم تُحدَّد كلمة سر بعد في إعدادات Vercel (ADMIN_PASSWORD)."; $("loginBtn").disabled = true; }
+    setTimeout(() => $("pw").focus(), 50);
+    return;
+  }
+  $("loginView").hidden = true; $("appView").hidden = false;
+  await loadMenu();
+}
+$("loginForm").addEventListener("submit", async e => {
+  e.preventDefault();
+  $("loginErr").textContent = ""; $("loginBtn").disabled = true; $("loginBtn").textContent = "…";
+  try {
+    const r = await api("api/login", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ password: $("pw").value }) });
+    if (r.ok){ $("pw").value = ""; await start(); }
+    else $("loginErr").textContent = r.status === 401 ? "كلمة السر غير صحيحة." : "تعذّر الدخول، حاول مرة أخرى.";
+  } catch { $("loginErr").textContent = "لا يوجد اتصال بالإنترنت."; }
+  $("loginBtn").disabled = false; $("loginBtn").textContent = "دخول";
+});
+$("logout").addEventListener("click", async () => { await api("api/login", { method: "DELETE" }).catch(() => {}); location.reload(); });
+
+/* ── تحميل المنيو ── */
+async function loadMenu(){
+  try {
+    const d = await (await fetch("api/menu", { cache: "no-store" })).json();
+    if (d && Array.isArray(d.items) && d.items.length){
+      menu = { items: d.items, gamesPassPrice: d.gamesPassPrice ?? 200 };
+      if (d.savedAt) $("status").textContent = "آخر حفظ: " + new Date(d.savedAt).toLocaleString("fr-FR", { dateStyle: "short", timeStyle: "short" });
+    } else {
+      menu = JSON.parse(JSON.stringify(window.COUP_DEFAULT || { items: [], gamesPassPrice: 200 }));
+      $("status").textContent = "هذه هي القائمة الأصلية. أول حفظ ينشرها من اللوحة.";
+    }
+  } catch {
+    toast("تعذّر تحميل المنيو. تحقق من الاتصال.", true);
+  }
+  render();
+}
+
+/* ── العرض ── */
+const ICON_UP = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 15l6-6 6 6"/></svg>';
+const ICON_DOWN = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>';
+function render(){
+  document.querySelectorAll(".tab").forEach(t => {
+    t.setAttribute("aria-selected", t.dataset.sec === section);
+    t.querySelector("small").textContent = menu.items.filter(i => i.section === t.dataset.sec).length;
+  });
+  $("passBox").hidden = section !== "games";
+  $("passPrice").value = menu.gamesPassPrice;
+  $("addLabel").textContent = section === "games" ? "إضافة لعبة جديدة" : "إضافة صنف جديد";
+  const rows = menu.items.map((it, i) => ({ it, i })).filter(x => x.it.section === section);
+  $("list").innerHTML = rows.length ? rows.map(({ it, i }, k) => `
+    <li class="row ${it.hidden ? "off" : ""}">
+      <div class="thumb">${it.image ? `<img src="${esc(it.image)}" alt="">` : ""}</div>
+      <button class="main" type="button" data-edit="${i}">
+        <span class="n">${esc(it.name_ar || it.name_fr)}</span>
+        <span class="f">${esc(it.name_fr)}</span>
+        <span class="p">${it.section === "games" ? "ضمن سعر الألعاب" : `<b>${esc(it.price)}</b> MRU`}${it.hidden ? '<span class="tag">مخفي</span>' : ""}</span>
+      </button>
+      <div class="move">
+        <button type="button" data-up="${i}" aria-label="تقديم" ${k === 0 ? "disabled" : ""}>${ICON_UP}</button>
+        <button type="button" data-down="${i}" aria-label="تأخير" ${k === rows.length - 1 ? "disabled" : ""}>${ICON_DOWN}</button>
+      </div>
+    </li>`).join("") : `<li class="sub" style="text-align:center;padding:24px">لا توجد أصناف في هذا القسم بعد.</li>`;
+}
+$("tabs").addEventListener("click", e => { const t = e.target.closest(".tab"); if (t){ section = t.dataset.sec; render(); } });
+
+/* ترتيب الأصناف (أعلى / أسفل) — يُحفظ فوراً */
+$("list").addEventListener("click", async e => {
+  const ed = e.target.closest("[data-edit]"), up = e.target.closest("[data-up]"), dn = e.target.closest("[data-down]");
+  if (ed) return openEditor(+ed.dataset.edit);
+  if (up || dn){
+    const i = +(up || dn).dataset[up ? "up" : "down"];
+    const same = menu.items.map((it, k) => ({ it, k })).filter(x => x.it.section === section).map(x => x.k);
+    const pos = same.indexOf(i), j = same[pos + (up ? -1 : 1)];
+    if (j === undefined) return;
+    [menu.items[i], menu.items[j]] = [menu.items[j], menu.items[i]];
+    render();
+    await save("تم تغيير الترتيب ✓");
+  }
+});
+
+/* سعر الألعاب */
+$("passSave").addEventListener("click", async () => {
+  const v = Math.round(+$("passPrice").value);
+  if (!(v >= 0) || $("passPrice").value === ""){ toast("اكتب سعراً صحيحاً.", true); return; }
+  menu.gamesPassPrice = v;
+  await save("تم حفظ سعر الألعاب ✓");
+});
+
+/* ── نافذة الصنف ── */
+function openEditor(i){
+  editing = Number.isInteger(i) ? i : null;
+  const it = editing === null ? { section, name_ar: "", name_fr: "", desc_ar: "", desc_fr: "", price: "", image: "" } : menu.items[editing];
+  pendingImage = null;
+  $("sheetTitle").textContent = editing === null ? (section === "games" ? "لعبة جديدة" : "صنف جديد") : "تعديل الصنف";
+  $("fSection").value = it.section;
+  $("fNameAr").value = it.name_ar || ""; $("fNameFr").value = it.name_fr || "";
+  $("fDescAr").value = it.desc_ar || ""; $("fDescFr").value = it.desc_fr || "";
+  $("fPrice").value = it.price ?? "";
+  $("fShown").checked = !it.hidden;
+  setPreview(it.image);
+  $("fileLabel").textContent = it.image ? "تغيير الصورة" : "اختيار صورة";
+  $("deleteBtn").hidden = editing === null;
+  $("formErr").textContent = "";
+  syncPriceField();
+  $("back").classList.add("open"); $("sheet").classList.add("open"); $("sheet").scrollTop = 0;
+  setTimeout(() => $("fNameAr").focus(), 300);
+}
+function closeEditor(){ $("back").classList.remove("open"); $("sheet").classList.remove("open"); }
+function setPreview(src){ $("pv").innerHTML = src ? `<img src="${esc(src)}" alt="">` : '<span class="sub">لا صورة</span>'; }
+function syncPriceField(){ $("priceField").hidden = $("fSection").value === "games"; }
+$("fSection").addEventListener("change", syncPriceField);
+$("addBtn").addEventListener("click", () => openEditor(null));
+$("cancelBtn").addEventListener("click", closeEditor);
+$("back").addEventListener("click", closeEditor);
+document.addEventListener("keydown", e => { if (e.key === "Escape") closeEditor(); });
+
+/* تصغير الصورة في الهاتف قبل الرفع (أسرع، وتبقى الخلفية الشفافة) */
+async function shrink(file){
+  const bmp = await createImageBitmap(file);
+  const max = 900, k = Math.min(1, max / Math.max(bmp.width, bmp.height));
+  const c = document.createElement("canvas");
+  c.width = Math.round(bmp.width * k); c.height = Math.round(bmp.height * k);
+  c.getContext("2d").drawImage(bmp, 0, 0, c.width, c.height);
+  const webp = await new Promise(r => c.toBlob(r, "image/webp", 0.9));
+  if (webp && webp.type === "image/webp") return webp;
+  return new Promise(r => c.toBlob(r, "image/png"));
+}
+$("file").addEventListener("change", async () => {
+  const f = $("file").files[0]; if (!f) return;
+  try { pendingImage = await shrink(f); }
+  catch { pendingImage = f; }
+  setPreview(URL.createObjectURL(pendingImage));
+  $("fileLabel").textContent = "تغيير الصورة";
+  $("file").value = "";
+});
+
+const slug = s => (s || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 40);
+function newId(nameFr){
+  const base = slug(nameFr) || "item";
+  let id = base, n = 2;
+  while (menu.items.some(i => i.id === id)) id = `${base}-${n++}`;
+  return id;
+}
+
+$("itemForm").addEventListener("submit", async e => {
+  e.preventDefault();
+  const sec = $("fSection").value;
+  const nameAr = $("fNameAr").value.trim(), nameFr = $("fNameFr").value.trim();
+  const priceRaw = $("fPrice").value;
+  if (!nameAr){ $("formErr").textContent = "اكتب اسم الصنف بالعربية."; $("fNameAr").focus(); return; }
+  if (sec !== "games" && (priceRaw === "" || !(+priceRaw >= 0))){ $("formErr").textContent = "اكتب السعر بالأرقام."; $("fPrice").focus(); return; }
+  if (editing === null && !pendingImage){ $("formErr").textContent = "اختر صورة للصنف."; return; }
+  $("formErr").textContent = "";
+
+  const before = JSON.parse(JSON.stringify(menu));
+  $("busy").hidden = false;
+  try {
+    let image = editing === null ? "" : menu.items[editing].image;
+    if (pendingImage){
+      const r = await api("api/upload", { method: "POST", headers: { "content-type": pendingImage.type || "image/png" }, body: pendingImage });
+      if (r.status === 401) return sessionExpired();
+      if (!r.ok) throw new Error("upload");
+      image = (await r.json()).url;
+    }
+    const it = {
+      ...(editing === null ? { id: newId(nameFr || nameAr) } : menu.items[editing]),
+      section: sec, name_ar: nameAr, name_fr: nameFr,
+      desc_ar: $("fDescAr").value.trim(), desc_fr: $("fDescFr").value.trim(), image,
+    };
+    if (sec === "games") delete it.price; else it.price = Math.round(+priceRaw);
+    if ($("fShown").checked) delete it.hidden; else it.hidden = true;
+    if (editing === null) menu.items.push(it);
+    else if (menu.items[editing].section !== sec){ menu.items.splice(editing, 1); menu.items.push(it); }
+    else menu.items[editing] = it;
+    const ok = await save(editing === null ? "تمت إضافة الصنف ✓" : "تم حفظ التعديل ✓", true);
+    if (!ok){ menu = before; render(); return; }
+    section = sec; closeEditor(); render();
+  } catch {
+    menu = before; render();
+    toast("لم يُحفظ. تحقق من الاتصال وحاول مرة أخرى.", true);
+  } finally { $("busy").hidden = true; }
+});
+
+$("deleteBtn").addEventListener("click", async () => {
+  if (editing === null) return;
+  const it = menu.items[editing];
+  if (!confirm(`حذف «${it.name_ar || it.name_fr}» من المنيو نهائياً؟\n(إن أردت إخفاءه مؤقتاً فقط، ألغِ علامة «متوفر الآن» بدل الحذف)`)) return;
+  const before = JSON.parse(JSON.stringify(menu));
+  menu.items.splice(editing, 1);
+  if (await save("تم حذف الصنف ✓")){ closeEditor(); render(); } else { menu = before; render(); }
+});
+
+/* ── الحفظ: يُرسل المنيو كاملاً ── */
+async function save(okMsg, quiet){
+  if (!quiet) $("busy").hidden = false;
+  try {
+    const r = await api("api/save", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(menu) });
+    if (r.status === 401){ sessionExpired(); return false; }
+    if (!r.ok) throw new Error((await r.json().catch(() => ({}))).detail || r.status);
+    const d = await r.json();
+    $("status").textContent = "آخر حفظ: " + new Date(d.savedAt).toLocaleString("fr-FR", { dateStyle: "short", timeStyle: "short" }) + " · يظهر في المنيو خلال ثوانٍ.";
+    toast(okMsg);
+    return true;
+  } catch (e) {
+    toast("لم يُحفظ. تحقق من الاتصال وحاول مرة أخرى.", true);
+    return false;
+  } finally { if (!quiet) $("busy").hidden = true; }
+}
+function sessionExpired(){ toast("انتهت صلاحية الدخول، سجّل الدخول مرة أخرى.", true); setTimeout(() => location.reload(), 1800); return false; }
+
+start();
+</script>
+</body>
+</html>

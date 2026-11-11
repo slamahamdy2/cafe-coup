@@ -5,3 +5,6 @@ qr/
 .vercelignore
 
 .vercel
+node_modules/
+.local-store/
+.env*
