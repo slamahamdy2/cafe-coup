@@ -216,10 +216,8 @@ button{font:inherit;color:inherit;cursor:pointer}
 .w-sum .amt{font-size:46px}
 .spin{position:relative;width:100%;height:100%;animation:plateSpin 40s linear infinite;will-change:transform}
 .spin img{display:block;width:100%;height:100%;border-radius:50%}
-/* direction:ltr ضروري: في الصفحة العربية (rtl) كانت الكتابة تبدأ خارج الدائرة فلا تظهر */
-.rim{position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none;direction:ltr}
-/* كتابة الحافة: خط نسخ ناعم (Amiri) مع مدّ طويل للحروف (كشيدة) */
-.rim text{font-family:"Amiri",var(--font);font-weight:700;fill:var(--cream);opacity:.95}
+/* كتابة الحافة: تُرسم على canvas (سطر مستقيم ثم يُلف حول الطبق) حتى تظهر صحيحة في Safari أيضاً */
+.rim{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;opacity:.95}
 @keyframes plateSpin{to{transform:rotate(360deg)}}
 @media (prefers-reduced-motion:reduce){
   .spin,.float,.shadow,.pop{animation:none}
@@ -251,10 +249,7 @@ button{font:inherit;color:inherit;cursor:pointer}
     <div class="spin">
       <img src="images/plate.png" alt="" aria-hidden="true">
       <!-- الكتابة الدائرية على حافة الطبق، تدور معه -->
-      <svg class="rim" viewBox="0 0 500 500" aria-hidden="true">
-        <defs><path id="rimPath" d="M250,250 m-212,0 a212,212 0 1,1 424,0 a212,212 0 1,1 -424,0"/></defs>
-        <text id="rimText" direction="ltr" text-anchor="start" dominant-baseline="central"><textPath href="#rimPath" id="rimTP"></textPath></text>
-      </svg>
+      <canvas class="rim" id="rim" aria-hidden="true"></canvas>
     </div>
   </div>
   <div class="track" id="track"></div>
@@ -426,21 +421,55 @@ const store = { get(k){ try { return localStorage.getItem(k); } catch(e){ return
                 set(k,v){ try { localStorage.setItem(k,v); } catch(e){} } };
 let lang = store.get("coup-lang") === "fr" ? "fr" : "ar";
 
-// يكرر العبارة حول الطبق ويضبط حجم الخط حتى تملأ الدائرة بالتساوي
+/* كتابة الحافة الدائرية
+   1) تُكتب العبارة في سطر مستقيم على canvas (كل المتصفحات، ومنها Safari، تربط الحروف العربية صحيحاً هنا)
+   2) ثم يُقطّع السطر إلى شرائح رفيعة تُلصق واحدة واحدة حول الدائرة
+   هكذا تبقى الحروف متصلة ومقروءة على كل الهواتف. */
 function fitRim(){
-  const tp = document.getElementById("rimTP"), t = document.getElementById("rimText");
-  const C = 2 * Math.PI * 212;                 // محيط مسار الكتابة
+  const cv = document.getElementById("rim");
+  const css = cv.clientWidth; if (!css) return;
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  const S = Math.round(css * dpr);             // حجم الرسم بالبكسل
+  const k = S / 500;                           // نفس مقاييس التصميم الأصلي (500 وحدة)
+  const R = 212 * k;                           // نصف قطر خط الكتابة
+  const C = 2 * Math.PI * R;                   // محيط الدائرة
+  const font = sz => `700 ${sz}px "Amiri", serif`;
   const unit = RIM[lang] + SEP;
-  t.setAttribute("font-size", 40);
-  tp.textContent = unit;
-  const w = t.getComputedTextLength() || 300;  // طول العبارة بحجم 40
-  let n = Math.max(2, Math.round(C / (w * 0.95)));   // عدد التكرارات بحجم قريب من 40
-  let size = 40 * C / (w * n) * 0.985;
-  while (size > 46 && n < 8){ n++; size = 40 * C / (w * n) * 0.985; }
-  while (size < 30 && n > 2){ n--; size = 40 * C / (w * n) * 0.985; }
-  t.setAttribute("font-size", size.toFixed(2));
-  tp.textContent = unit.repeat(n);
+
+  // نفس طريقة الضبط: تكرار العبارة وحجم خط بين 30 و46 وحدة حتى تملأ الدائرة
+  const m = document.createElement("canvas").getContext("2d");
+  m.font = font(40 * k);
+  const w = m.measureText(unit).width || 300 * k;
+  let n = Math.max(2, Math.round(C / (w * 0.95)));
+  let size = 40 * k * C / (w * n) * 0.985;
+  while (size > 46 * k && n < 8){ n++; size = 40 * k * C / (w * n) * 0.985; }
+  while (size < 30 * k && n > 2){ n--; size = 40 * k * C / (w * n) * 0.985; }
+
+  // 1) السطر المستقيم
+  const line = document.createElement("canvas");
+  const lh = Math.ceil(size * 1.9);
+  line.width = Math.ceil(C); line.height = lh;
+  const lc = line.getContext("2d");
+  lc.font = font(size); lc.fillStyle = "#F3EADB"; lc.textBaseline = "middle"; lc.direction = "ltr"; lc.textAlign = "left";
+  const text = unit.repeat(n);
+  const tw = lc.measureText(text).width;
+  lc.fillText(text, (C - tw) / 2, lh / 2);      // في المنتصف حتى تتساوى الفراغات عند نقطة الالتقاء
+
+  // 2) لفّ السطر حول الدائرة شريحة بعد شريحة
+  cv.width = S; cv.height = S;
+  const ctx = cv.getContext("2d");
+  ctx.clearRect(0, 0, S, S);
+  const step = Math.max(1, Math.round(dpr));   // عرض الشريحة
+  for (let x = 0; x < line.width; x += step){
+    const a = Math.PI + (x + step / 2) / R;    // تبدأ من يسار الدائرة وتسير مع عقارب الساعة
+    ctx.save();
+    ctx.translate(S / 2, S / 2);
+    ctx.rotate(a + Math.PI / 2);
+    ctx.drawImage(line, x, 0, step, lh, -step / 2 - 0.25, -R - lh / 2, step + 0.5, lh);
+    ctx.restore();
+  }
 }
+let rimRz; addEventListener("resize", () => { clearTimeout(rimRz); rimRz = setTimeout(fitRim, 150); });
 
 function applyLang(){
   document.documentElement.lang = lang;
@@ -800,7 +829,11 @@ document.querySelector(".lang").addEventListener("click", e => {
 });
 buildStage(0);
 applyLang();
-document.fonts && document.fonts.ready.then(fitRim);   // إعادة الضبط بعد تحميل الخط
+// إعادة الرسم بعد تحميل خط Amiri (canvas لا يعيد الرسم وحده)
+if (document.fonts){
+  document.fonts.load('700 40px "Amiri"', "قهوة CAFÉ").then(fitRim, fitRim);
+  document.fonts.ready.then(fitRim);
+}
 </script>
 </body>
 </html>
