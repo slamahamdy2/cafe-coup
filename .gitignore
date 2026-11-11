@@ -1,2 +1,7 @@
 .claude/
 .gstack/
+qr/
+.vercel/
+.vercelignore
+
+.vercel
