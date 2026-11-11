@@ -16,6 +16,8 @@ const CORS = {
   "access-control-allow-headers": "content-type",
 };
 const parse = v => (typeof v === "string" ? JSON.parse(v) : v);
+// سطر في سجلات Vercel لكل طلب (رمز وطاولة وعدد أصناف فقط، بلا بيانات شخصية)
+const log = (what, info) => console.log(`[orders] ${what} ${JSON.stringify(info)}`);
 
 export function OPTIONS() { return new Response(null, { status: 204, headers: CORS }); }
 
@@ -23,12 +25,12 @@ export function OPTIONS() { return new Response(null, { status: 204, headers: CO
 export async function POST(request) {
   const ip = (request.headers.get("x-forwarded-for") || "local").split(",")[0].trim();
   try {
-    if (await incrWithExpiry(`rl:orders:${ip}`, 600) > 40) return json({ error: "too-many" }, 429, CORS);
+    if (await incrWithExpiry(`rl:orders:${ip}`, 600) > 40) { log("rejected", { reason: "too-many" }); return json({ error: "too-many" }, 429, CORS); }
     const body = await request.json();
     const code = String(body.code || "").toUpperCase();
     const table = String(body.table || "").replace(/[^0-9]/g, "").slice(0, 4);
-    if (!/^[A-Z0-9]{4,8}$/.test(code) || !table) return json({ error: "invalid" }, 400, CORS);
-    if (!Array.isArray(body.lines) || !body.lines.length || body.lines.length > 60) return json({ error: "invalid" }, 400, CORS);
+    if (!/^[A-Z0-9]{4,8}$/.test(code) || !table) { log("rejected", { reason: !table ? "no-table" : "bad-code", code }); return json({ error: "invalid" }, 400, CORS); }
+    if (!Array.isArray(body.lines) || !body.lines.length || body.lines.length > 60) { log("rejected", { reason: "no-lines", code }); return json({ error: "invalid" }, 400, CORS); }
 
     // الأسعار تُحسب هنا من المنيو المحفوظ، لا من هاتف الزبون
     const menu = await loadMenu().catch(() => null);
@@ -47,7 +49,7 @@ export async function POST(request) {
       else if (!menu && typeof l.name_ar === "string") // لم يُحفظ منيو بعد: نقبل ما أرسله الهاتف
         lines.push({ id: String(l.id).slice(0, 60), name_ar: l.name_ar.slice(0, 80), name_fr: String(l.name_fr || "").slice(0, 80), q, price: Math.max(0, Math.round(+l.price) || 0) });
     }
-    if (!lines.length) return json({ error: "invalid" }, 400, CORS);
+    if (!lines.length) { log("rejected", { reason: "unknown-items", code, ids: body.lines.map(l => String(l.id)).slice(0, 10), menuItems: byId.size }); return json({ error: "invalid" }, 400, CORS); }
     const total = lines.reduce((s, l) => s + l.q * l.price, 0);
 
     const day = today(), key = `orders:${day}`, now = new Date().toISOString();
@@ -56,6 +58,7 @@ export async function POST(request) {
     if (existing && existing.status === "new") {
       Object.assign(existing, { table, lines, total, updatedAt: now });
       await hset(key, code, JSON.stringify(existing));
+      log("updated", { code, table, no: existing.no, day, items: lines.length });
       return json({ ok: true, no: existing.no }, 200, CORS);
     }
     const id = existing ? `${code}-${Date.now() % 100000}` : code;
@@ -63,8 +66,10 @@ export async function POST(request) {
     const order = { id, code, no, day, table, lang: body.lang === "fr" ? "fr" : "ar", at: now, updatedAt: now, lines, total, status: "new" };
     await hset(key, id, JSON.stringify(order));
     await sadd("orders:days", day);
+    log("created", { code, id, table, no, day, items: lines.length });
     return json({ ok: true, no }, 200, CORS);
   } catch (e) {
+    console.error("[orders] POST failed", e);
     return json({ error: "server", detail: String(e.message || e) }, 500, CORS);
   }
 }
@@ -104,8 +109,10 @@ export async function GET(request) {
     }
     const day = DAY_RE.test(url.searchParams.get("day") || "") ? url.searchParams.get("day") : today();
     const orders = await dayOrders(day);
+    log("listed", { role, day, count: orders.length });
     return json({ day, today: today(), orders, summary: summarize(orders), role });
   } catch (e) {
+    console.error("[orders] GET failed", e);
     return json({ error: "server", detail: String(e.message || e) }, 500);
   }
 }
