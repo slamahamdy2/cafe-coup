@@ -1,5 +1,5 @@
 // POST /api/save — حفظ المنيو كاملاً من اللوحة (لصاحب المقهى فقط)
-import { isAuthed, fromPanel, json } from "./_lib/auth.js";
+import { sessionRole, fromPanel, json } from "./_lib/auth.js";
 import { saveMenu } from "./_lib/store.js";
 
 const SECTIONS = new Set(["drinks", "food", "games"]);
@@ -39,7 +39,7 @@ function clean(body) {
 }
 
 export async function POST(request) {
-  if (!fromPanel(request) || !isAuthed(request)) return json({ error: "unauthorized" }, 401);
+  if (!fromPanel(request) || (await sessionRole(request)) !== "owner") return json({ error: "unauthorized" }, 401); // المالك فقط
   let data;
   try { data = clean(await request.json()); }
   catch (e) { return json({ error: "invalid", detail: e.message }, 400); }

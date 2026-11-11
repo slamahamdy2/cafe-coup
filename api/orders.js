@@ -3,7 +3,7 @@
 // GET   /api/orders?day=...    (صاحب المقهى) طلبات يوم معيّن، اليوم افتراضياً
 // GET   /api/orders?archive=1  (صاحب المقهى) قائمة الأيام السابقة مع عدد الطلبات والمبالغ
 // PATCH /api/orders            (صاحب المقهى) تغيير حالة طلب: جديد / قُدِّم / مدفوع / ملغى
-import { isAuthed, fromPanel, json } from "./_lib/auth.js";
+import { sessionRole, fromPanel, json } from "./_lib/auth.js";
 import { loadMenu } from "./_lib/store.js";
 import { hget, hset, hgetall, incr, incrWithExpiry, sadd, smembers } from "./_lib/kv.js";
 
@@ -86,9 +86,16 @@ async function dayOrders(day) {
 }
 
 export async function GET(request) {
-  if (!isAuthed(request)) return json({ error: "unauthorized" }, 401);
+  const role = await sessionRole(request);
+  if (!role) return json({ error: "unauthorized" }, 401);
   const url = new URL(request.url);
   try {
+    // العمال: طلبات اليوم فقط، بدون مبالغ مالية
+    if (role === "staff") {
+      const orders = await dayOrders(today());
+      const s = summarize(orders);
+      return json({ day: today(), today: today(), orders, summary: { count: s.count, byStatus: s.byStatus }, role });
+    }
     if (url.searchParams.get("archive")) {
       const days = (await smembers("orders:days")).filter(d => DAY_RE.test(d)).sort().reverse().slice(0, 120);
       const list = [];
@@ -97,7 +104,7 @@ export async function GET(request) {
     }
     const day = DAY_RE.test(url.searchParams.get("day") || "") ? url.searchParams.get("day") : today();
     const orders = await dayOrders(day);
-    return json({ day, today: today(), orders, summary: summarize(orders) });
+    return json({ day, today: today(), orders, summary: summarize(orders), role });
   } catch (e) {
     return json({ error: "server", detail: String(e.message || e) }, 500);
   }
@@ -105,10 +112,12 @@ export async function GET(request) {
 
 /* ── تغيير الحالة (صاحب المقهى فقط) ── */
 export async function PATCH(request) {
-  if (!fromPanel(request) || !isAuthed(request)) return json({ error: "unauthorized" }, 401);
+  const role = await sessionRole(request);
+  if (!fromPanel(request) || !role) return json({ error: "unauthorized" }, 401);
   try {
     const { day, id, status } = await request.json();
     if (!DAY_RE.test(day || "") || !STATUSES.includes(status)) return json({ error: "invalid" }, 400);
+    if (role === "staff" && day !== today()) return json({ error: "forbidden" }, 403); // العمال: اليوم فقط
     const key = `orders:${day}`;
     const o = parse(await hget(key, String(id)));
     if (!o) return json({ error: "not-found" }, 404);

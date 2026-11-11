@@ -38,10 +38,60 @@ button{cursor:pointer}
 .lang button[aria-pressed=true]{background:var(--ink);color:var(--bg)}
 
 /* التبويبات الرئيسية */
-.nav{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:16px 0 14px;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:5px}
-.nav button{border:0;background:none;border-radius:14px;padding:12px 6px 9px;font-family:"Lalezar",sans-serif;font-size:19px;line-height:1;position:relative}
+.nav{display:grid;grid-template-columns:repeat(var(--tabs,4),1fr);gap:4px;margin:16px 0 14px;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:5px}
+.nav button{border:0;background:none;border-radius:14px;padding:12px 4px 9px;font-family:"Lalezar",sans-serif;font-size:17px;line-height:1;position:relative}
+@media (min-width:520px){ .nav button{font-size:19px} }
+.role-badge{display:inline-block;font-size:12px;border-radius:999px;padding:3px 10px 1px;background:var(--st-served-bg);color:var(--st-served);font-weight:700;margin-top:6px}
+.banner{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;background:#FFF4DE;border:1.5px solid #E7B66A;border-radius:16px;padding:12px 14px;margin:0 0 12px;font-size:14px}
+.banner b{font-family:"Lalezar",sans-serif;font-weight:400;font-size:17px;display:block}
+.linkbtn{border:0;background:none;color:var(--muted);text-decoration:underline;text-underline-offset:4px;font-size:14px;padding:6px}
+
+/* ── الإحصائيات ── */
+.periods{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0 12px}
+.kpis{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+@media (min-width:600px){ .kpis{grid-template-columns:repeat(3,1fr)} }
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:12px 14px}
+.kpi span{display:block;font-size:13px;color:var(--muted)}
+.kpi b{display:block;font-family:"Lalezar",sans-serif;font-weight:400;font-size:28px;line-height:1.15}
+.kpi small{font-size:12px;color:var(--muted)}
+.chart{margin-top:14px}
+.chart h3{margin:0 0 2px;font-family:"Lalezar",sans-serif;font-weight:400;font-size:20px}
+.chart .sub{margin-bottom:10px}
+.cols{display:flex;align-items:flex-end;gap:2px;height:150px;padding-top:18px;border-bottom:1px solid var(--line);direction:ltr;overflow-x:auto}
+.col{flex:1 1 0;min-width:8px;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;position:relative}
+.col i{display:block;width:100%;max-width:34px;background:var(--muted);border-radius:4px 4px 0 0;min-height:2px}
+.col.zero i{background:var(--line)}
+.col:hover i,.col:focus i{background:var(--ink)}
+.col em{position:absolute;bottom:calc(var(--h) + 2px);font-style:normal;font-size:11px;color:var(--ink);white-space:nowrap}
+.xlabels{display:flex;gap:2px;direction:ltr;margin-top:4px}
+.xlabels span{flex:1 1 0;min-width:8px;text-align:center;font-size:10px;color:var(--muted);overflow:hidden;white-space:nowrap}
+.hbars{display:grid;gap:8px}
+.hbar{display:grid;grid-template-columns:minmax(90px,30%) 1fr auto;gap:10px;align-items:center;font-size:14px}
+.hbar .track{height:14px;background:rgba(59,36,24,.08);border-radius:4px;overflow:hidden}
+.hbar .track i{display:block;height:100%;background:var(--muted);border-radius:4px}
+.hbar b{font-weight:700;font-size:14px;min-width:70px;text-align:end}
+.toptable{width:100%;border-collapse:collapse;font-size:14px}
+.toptable th{font-weight:500;color:var(--muted);text-align:start;padding:6px 4px;border-bottom:1px solid var(--line)}
+.toptable td{padding:8px 4px;border-bottom:1px dashed var(--line)}
+.toptable td.n{font-weight:700;text-align:end;white-space:nowrap}
+.toptable th.n{text-align:end}
+
+/* ── الأمان ── */
+.pwform{display:grid;gap:10px;margin-top:10px}
+.pwform .rowf{margin-top:0}
+.ok{color:var(--ok);font-size:14px;margin:0}
+.state{display:inline-block;font-size:12px;border-radius:999px;padding:3px 10px 1px;font-weight:700}
+.state.on{background:var(--st-paid-bg);color:var(--st-paid)} .state.off{background:var(--st-cancelled-bg);color:var(--st-cancelled)}
+.modal{position:fixed;inset:0;z-index:80;background:rgba(30,14,6,.55);display:grid;place-items:center;padding:16px}
+.modal .box{background:var(--bg);border-radius:24px;padding:22px 20px;max-width:420px;width:100%;text-align:center;box-shadow:0 30px 60px -20px rgba(0,0,0,.5)}
+.modal h2{margin:0 0 6px;font-size:24px}
+.code{font-family:ui-monospace,Consolas,monospace;font-size:26px;letter-spacing:.08em;direction:ltr;background:#fff;border:2px dashed var(--ink);border-radius:14px;padding:14px 10px;margin:14px 0;user-select:all;font-weight:700}
+.modal .warn{font-size:14px;color:var(--bad);line-height:1.6}
+.modal label{display:flex;gap:8px;align-items:center;justify-content:center;margin:12px 0;font-size:15px}
+.modal label input{width:20px;height:20px;accent-color:var(--ink)}
+.modal .btns{display:grid;gap:8px}
 .nav button[aria-selected=true]{background:var(--ink);color:var(--bg)}
-.nav .dot{position:absolute;top:6px;inset-inline-end:10px;min-width:20px;height:20px;border-radius:999px;background:var(--st-new);color:#fff;font-family:"Tajawal";font-size:12px;line-height:21px;padding:0 6px}
+.nav .dot{position:absolute;top:-7px;inset-inline-end:-2px;min-width:20px;height:20px;border-radius:999px;background:var(--st-new);color:#fff;font-family:"Tajawal";font-size:12px;line-height:21px;padding:0 6px;box-shadow:0 0 0 2px var(--bg)}
 h1{margin:4px 0 2px;font-size:28px}
 
 /* الدخول */
@@ -177,6 +227,26 @@ html[dir=rtl] .ltr{text-align:left}
     </div>
     <p class="err" id="loginErr" role="alert"></p>
     <button class="btn" type="submit" id="loginBtn" data-t="login"></button>
+    <button class="linkbtn" type="button" id="forgotBtn" data-t="forgot"></button>
+  </form>
+  <!-- نسيت كلمة السر -->
+  <form id="recoverForm" hidden>
+    <p class="sub" data-t="recoverHelp" style="text-align:start;line-height:1.7"></p>
+    <div class="field">
+      <label for="rKey" data-t="recoverKey"></label>
+      <input class="input" id="rKey" autocomplete="off" autocapitalize="characters" spellcheck="false" style="direction:ltr">
+    </div>
+    <div class="field">
+      <label for="rNew" data-t="newOwnerPw"></label>
+      <input class="input" id="rNew" type="password" autocomplete="new-password">
+    </div>
+    <div class="field">
+      <label for="rNew2" data-t="confirmPw"></label>
+      <input class="input" id="rNew2" type="password" autocomplete="new-password">
+    </div>
+    <p class="err" id="recoverErr" role="alert"></p>
+    <button class="btn" type="submit" id="recoverBtn" data-t="resetPw"></button>
+    <button class="linkbtn" type="button" id="backLogin" data-t="backLogin"></button>
   </form>
   <div class="lang" style="margin-top:16px" role="group" aria-label="Langue / اللغة">
     <button type="button" data-lang="ar">عربي</button><button type="button" data-lang="fr">FR</button>
@@ -196,11 +266,19 @@ html[dir=rtl] .ltr{text-align:left}
     </div>
   </div>
 
+  <span class="role-badge" id="roleBadge" data-t="staffBadge" hidden></span>
   <nav class="nav" role="tablist" id="nav">
     <button role="tab" data-view="orders"><span data-t="navOrders"></span><span class="dot" id="newDot" hidden></span></button>
-    <button role="tab" data-view="menu" data-t="navMenu"></button>
-    <button role="tab" data-view="settings" data-t="navSettings"></button>
+    <button role="tab" data-view="stats" data-t="navStats" data-owner></button>
+    <button role="tab" data-view="menu" data-t="navMenu" data-owner></button>
+    <button role="tab" data-view="settings" data-t="navSettings" data-owner></button>
   </nav>
+
+  <!-- تنبيه: رمز الاسترجاع لم يُحفظ بعد -->
+  <div class="banner" id="recoveryBanner" hidden>
+    <span><b data-t="bannerTitle"></b><span data-t="bannerSub"></span></span>
+    <button class="btn" type="button" id="bannerBtn" data-t="createCode" style="padding:11px 16px 9px;font-size:16px"></button>
+  </div>
 
   <!-- الطلبات -->
   <section id="ordersView">
@@ -209,12 +287,12 @@ html[dir=rtl] .ltr{text-align:left}
         <h1 class="h" id="dayTitle"></h1>
         <p class="sub" id="dayDate"></p>
       </div>
-      <button class="chip" type="button" id="archiveBtn" data-t="archive"></button>
+      <button class="chip" type="button" id="archiveBtn" data-t="archive" data-owner></button>
     </div>
-    <div class="stats">
+    <div class="stats" id="statsRow">
       <div class="stat"><b id="sCount">0</b><span data-t="statCount"></span></div>
-      <div class="stat paid"><b id="sPaid">0</b><span data-t="statPaid"></span></div>
-      <div class="stat unpaid"><b id="sUnpaid">0</b><span data-t="statUnpaid"></span></div>
+      <div class="stat paid" data-owner><b id="sPaid">0</b><span data-t="statPaid"></span></div>
+      <div class="stat unpaid" data-owner><b id="sUnpaid">0</b><span data-t="statUnpaid"></span></div>
     </div>
     <div class="filters" id="filters"></div>
     <ul class="orders" id="orders"></ul>
@@ -228,6 +306,44 @@ html[dir=rtl] .ltr{text-align:left}
     </div>
     <p class="sub" data-t="archiveSub" style="margin-bottom:12px"></p>
     <ul class="archive" id="archive"></ul>
+  </section>
+
+  <!-- الإحصائيات (للمالك) -->
+  <section id="statsView" hidden>
+    <h1 class="h" data-t="navStats"></h1>
+    <p class="sub" id="statsRange"></p>
+    <div class="periods" id="periods">
+      <button class="f" data-p="today" data-t="pToday"></button>
+      <button class="f" data-p="7" data-t="p7"></button>
+      <button class="f" data-p="30" data-t="p30"></button>
+      <button class="f" data-p="month" data-t="pMonth"></button>
+    </div>
+    <div class="kpis">
+      <div class="kpi"><span data-t="kSales"></span><b id="kSales">0</b><small>MRU</small></div>
+      <div class="kpi"><span data-t="kPaid"></span><b id="kPaid" style="color:var(--st-paid)">0</b><small>MRU</small></div>
+      <div class="kpi"><span data-t="kUnpaid"></span><b id="kUnpaid" style="color:var(--st-new)">0</b><small>MRU</small></div>
+      <div class="kpi"><span data-t="kOrders"></span><b id="kOrders">0</b></div>
+      <div class="kpi"><span data-t="kAvg"></span><b id="kAvg">0</b><small>MRU</small></div>
+      <div class="kpi"><span data-t="kCancelled"></span><b id="kCancelled">0</b><small id="kCancelledV"></small></div>
+    </div>
+    <div class="chart card" id="dailyCard">
+      <h3 data-t="cDaily"></h3><p class="sub" data-t="cDailySub"></p>
+      <div class="cols" id="dailyCols" role="img"></div>
+      <div class="xlabels" id="dailyX" aria-hidden="true"></div>
+    </div>
+    <div class="chart card">
+      <h3 data-t="cSections"></h3><p class="sub" data-t="cSectionsSub"></p>
+      <div class="hbars" id="sectionBars"></div>
+    </div>
+    <div class="chart card">
+      <h3 data-t="cTop"></h3><p class="sub" data-t="cTopSub"></p>
+      <table class="toptable"><thead><tr><th>#</th><th data-t="thItem"></th><th class="n" data-t="thQty"></th><th class="n" data-t="thSales"></th></tr></thead><tbody id="topBody"></tbody></table>
+    </div>
+    <div class="chart card">
+      <h3 data-t="cHours"></h3><p class="sub" data-t="cHoursSub"></p>
+      <div class="cols" id="hourCols" role="img"></div>
+      <div class="xlabels" id="hourX" aria-hidden="true"></div>
+    </div>
   </section>
 
   <!-- المنيو -->
@@ -260,6 +376,38 @@ html[dir=rtl] .ltr{text-align:left}
         <button class="btn" type="button" id="waSave" data-t="save"></button>
       </div>
       <p class="err" id="waErr"></p>
+    </div>
+    <!-- كلمة سر المالك -->
+    <div class="card">
+      <h3 data-t="ownerPwTitle"></h3>
+      <p class="sub" data-t="ownerPwSub"></p>
+      <form class="pwform" id="ownerPwForm">
+        <input class="input" id="opCurrent" type="password" autocomplete="current-password" data-ph="currentPw">
+        <input class="input" id="opNew" type="password" autocomplete="new-password" data-ph="newPw">
+        <input class="input" id="opNew2" type="password" autocomplete="new-password" data-ph="confirmPw">
+        <p class="err" id="opErr"></p>
+        <button class="btn" type="submit" data-t="changePw"></button>
+      </form>
+    </div>
+    <!-- كلمة سر العمال -->
+    <div class="card">
+      <h3 data-t="staffPwTitle"></h3>
+      <p class="sub" data-t="staffPwSub"></p>
+      <p style="margin:8px 0 0"><span class="state" id="staffState"></span></p>
+      <form class="pwform" id="staffPwForm">
+        <input class="input" id="spNew" type="password" autocomplete="new-password" data-ph="newStaffPw">
+        <input class="input" id="spNew2" type="password" autocomplete="new-password" data-ph="confirmPw">
+        <p class="err" id="spErr"></p>
+        <button class="btn" type="submit" data-t="saveStaffPw"></button>
+        <button class="btn danger" type="button" id="staffDisable" data-t="disableStaff"></button>
+      </form>
+    </div>
+    <!-- رمز الاسترجاع -->
+    <div class="card">
+      <h3 data-t="recoveryTitle"></h3>
+      <p class="sub" data-t="recoverySub" style="line-height:1.7"></p>
+      <p style="margin:8px 0 0"><span class="state" id="recoveryState"></span></p>
+      <div class="rowf"><button class="btn ghost" type="button" id="newCodeBtn" data-t="newCode"></button></div>
     </div>
     <div class="card">
       <h3 data-t="langTitle"></h3>
@@ -310,6 +458,21 @@ html[dir=rtl] .ltr{text-align:left}
   </form>
 </div>
 
+<!-- رمز الاسترجاع: يُعرض مرة واحدة -->
+<div class="modal" id="codeModal" role="dialog" aria-modal="true" aria-labelledby="codeTitle" hidden>
+  <div class="box">
+    <h2 class="h" id="codeTitle" data-t="codeTitle"></h2>
+    <p class="sub" data-t="codeSub" style="line-height:1.7"></p>
+    <div class="code" id="codeText"></div>
+    <p class="warn" data-t="codeWarn"></p>
+    <label><input type="checkbox" id="codeSaved"><span data-t="codeSaved"></span></label>
+    <div class="btns">
+      <button class="btn ghost" type="button" id="codeCopy" data-t="copy"></button>
+      <button class="btn" type="button" id="codeDone" data-t="done" disabled></button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast" role="status"></div>
 <div class="busy" id="busy" hidden></div>
 
@@ -341,6 +504,26 @@ const TX = {
     noItems:"لا توجد أصناف في هذا القسم بعد.", up:"تقديم", down:"تأخير",
     waTitle:"رقم واتساب المقهى", waSub:"إليه تُرسل طلبات الزبائن. اكتبه بالصيغة الدولية مع رمز البلد، مثل 222 34 52 22 29.", waBad:"الرقم غير صحيح: 8 إلى 15 رقماً مع رمز البلد.", waSaved:"تم حفظ رقم واتساب ✓",
     langTitle:"لغة اللوحة", langSub:"تغيّر لغة هذه اللوحة فقط. المنيو يبقى بالعربية والفرنسية للزبائن.",
+    // الدخول والأمان
+    forgot:"نسيت كلمة السر؟", backLogin:"← رجوع إلى الدخول", resetPw:"تعيين كلمة سر جديدة",
+    recoverHelp:"اكتب رمز الاسترجاع الذي حفظته (مثل ABCD-EFGH-JKLM). إن ضاع الرمز أيضاً، اكتب المفتاح الرئيسي: قيمة ADMIN_PASSWORD من حسابك على Vercel (يمكنك تغييرها هناك متى شئت).",
+    recoverKey:"رمز الاسترجاع أو المفتاح الرئيسي", newOwnerPw:"كلمة سر المالك الجديدة", confirmPw:"تأكيد كلمة السر", currentPw:"كلمة السر الحالية", newPw:"كلمة السر الجديدة",
+    wrongKey:"الرمز أو المفتاح غير صحيح.", weakPw:"كلمة السر قصيرة: 6 أحرف على الأقل.", pwMismatch:"كلمتا السر غير متطابقتين.", tooMany:"محاولات كثيرة. انتظر قليلاً ثم حاول مرة أخرى.",
+    staffBadge:"حساب العمال", navStats:"الإحصائيات",
+    bannerTitle:"احفظ رمز الاسترجاع الآن", bannerSub:"بدونه، إن نسيت كلمة السر لن تستطيع الدخول إلا بالمفتاح الرئيسي من Vercel.", createCode:"إنشاء الرمز",
+    ownerPwTitle:"كلمة سر المالك", ownerPwSub:"تفتح كل شيء: الطلبات، الإحصائيات، المنيو والإعدادات. عند تغييرها تخرج كل الأجهزة الأخرى.", changePw:"تغيير كلمة السر", ownerPwSaved:"تم تغيير كلمة سر المالك ✓", wrongCurrent:"كلمة السر الحالية غير صحيحة.",
+    staffPwTitle:"كلمة سر العمال", staffPwSub:"للنُّدُل والعمال: يرون طلبات اليوم ويغيّرون حالتها فقط. لا يرون المال ولا الأرشيف، ولا يعدّلون المنيو أو الإعدادات.",
+    newStaffPw:"كلمة سر العمال الجديدة", saveStaffPw:"حفظ كلمة سر العمال", disableStaff:"إيقاف حساب العمال", staffOn:"مفعّل", staffOff:"غير مفعّل", staffSaved:"تم حفظ كلمة سر العمال ✓ (من كان داخلاً بالقديمة خرج)", staffDisabled:"تم إيقاف حساب العمال ✓",
+    confirmDisable:"إيقاف حساب العمال؟ سيخرج كل العمال فوراً.", sameAsOwner:"لا تستعمل نفس كلمة سر المالك للعمال.", sameAsStaff:"لا تستعمل نفس كلمة سر العمال للمالك.",
+    recoveryTitle:"رمز الاسترجاع", recoverySub:"إن نسيت كلمة سر المالك: في شاشة الدخول اضغط «نسيت كلمة السر؟» واكتب هذا الرمز. يُعرض مرة واحدة فقط، فاكتبه على ورقة واحفظه في مكان آمن خارج الهاتف. إنشاء رمز جديد يُبطل القديم.",
+    recoveryOn:"محفوظ", recoveryOff:"لم يُنشأ بعد", newCode:"إنشاء رمز استرجاع جديد", confirmNewCode:"إنشاء رمز جديد؟ الرمز القديم يتوقف عن العمل.",
+    codeTitle:"رمز الاسترجاع", codeSub:"اكتبه على ورقة أو صوّر الشاشة، واحفظه في مكان آمن.", codeWarn:"لن يُعرض هذا الرمز مرة أخرى. من يملكه يستطيع تغيير كلمة سر المالك.", codeSaved:"حفظتُ الرمز في مكان آمن", copy:"نسخ الرمز", copied:"تم النسخ ✓", done:"تم",
+    // الإحصائيات
+    pToday:"اليوم", p7:"7 أيام", p30:"30 يوماً", pMonth:"هذا الشهر", range:(a, b) => a === b ? a : `من ${a} إلى ${b}`,
+    kSales:"المبيعات", kPaid:"المدفوع", kUnpaid:"لم يُدفع بعد", kOrders:"عدد الطلبات", kAvg:"متوسط الطلب", kCancelled:"الطلبات الملغاة", cancelledV:v => `بقيمة ${v} MRU`,
+    cDaily:"المبيعات حسب اليوم", cDailySub:"MRU · مجموع الطلبات غير الملغاة لكل يوم", cSections:"المبيعات حسب القسم", cSectionsSub:"MRU",
+    cTop:"الأصناف الأكثر مبيعاً", cTopSub:"مرتّبة حسب المبيعات", thItem:"الصنف", thQty:"الكمية", thSales:"المبيعات (MRU)", noSales:"لا توجد مبيعات في هذه الفترة.",
+    cHours:"أوقات الذروة", cHoursSub:"عدد الطلبات حسب الساعة", other:"أخرى",
   },
   fr: {
     loginTitle:"Espace gérant", loginSub:"Page privée. Entrez le mot de passe pour continuer.", password:"Mot de passe", login:"Se connecter",
@@ -366,6 +549,24 @@ const TX = {
     noItems:"Aucun article dans cette rubrique.", up:"Monter", down:"Descendre",
     waTitle:"Numéro WhatsApp du café", waSub:"Les commandes des clients y sont envoyées. Format international avec l'indicatif, ex. 222 34 52 22 29.", waBad:"Numéro invalide : 8 à 15 chiffres avec l'indicatif.", waSaved:"Numéro WhatsApp enregistré ✓",
     langTitle:"Langue du panneau", langSub:"Change seulement la langue de ce panneau. Le menu reste en arabe et en français pour les clients.",
+    forgot:"Mot de passe oublié ?", backLogin:"← Retour à la connexion", resetPw:"Définir un nouveau mot de passe",
+    recoverHelp:"Entrez votre code de récupération (ex. ABCD-EFGH-JKLM). S'il est perdu aussi, entrez la clé maître : la valeur ADMIN_PASSWORD de votre compte Vercel (modifiable là-bas à tout moment).",
+    recoverKey:"Code de récupération ou clé maître", newOwnerPw:"Nouveau mot de passe gérant", confirmPw:"Confirmer le mot de passe", currentPw:"Mot de passe actuel", newPw:"Nouveau mot de passe",
+    wrongKey:"Code ou clé incorrect.", weakPw:"Mot de passe trop court : 6 caractères minimum.", pwMismatch:"Les deux mots de passe ne correspondent pas.", tooMany:"Trop de tentatives. Patientez un peu puis réessayez.",
+    staffBadge:"Compte personnel", navStats:"Statistiques",
+    bannerTitle:"Enregistrez votre code de récupération", bannerSub:"Sans lui, en cas d'oubli, seule la clé maître Vercel permet de revenir.", createCode:"Créer le code",
+    ownerPwTitle:"Mot de passe gérant", ownerPwSub:"Donne accès à tout : commandes, statistiques, menu, réglages. Le changer déconnecte les autres appareils.", changePw:"Changer le mot de passe", ownerPwSaved:"Mot de passe gérant modifié ✓", wrongCurrent:"Mot de passe actuel incorrect.",
+    staffPwTitle:"Mot de passe du personnel", staffPwSub:"Pour les serveurs : ils voient les commandes du jour et changent leur statut. Pas d'argent, pas d'archives, pas de menu ni de réglages.",
+    newStaffPw:"Nouveau mot de passe du personnel", saveStaffPw:"Enregistrer le mot de passe du personnel", disableStaff:"Désactiver le compte personnel", staffOn:"Activé", staffOff:"Désactivé", staffSaved:"Mot de passe du personnel enregistré ✓ (les anciennes sessions sont fermées)", staffDisabled:"Compte personnel désactivé ✓",
+    confirmDisable:"Désactiver le compte personnel ? Tous les serveurs seront déconnectés.", sameAsOwner:"N'utilisez pas le mot de passe gérant pour le personnel.", sameAsStaff:"N'utilisez pas le mot de passe du personnel pour le gérant.",
+    recoveryTitle:"Code de récupération", recoverySub:"En cas d'oubli du mot de passe gérant : sur l'écran de connexion, touchez « Mot de passe oublié ? » et entrez ce code. Il n'est affiché qu'une fois : notez-le sur papier, rangé hors du téléphone. Un nouveau code annule l'ancien.",
+    recoveryOn:"Enregistré", recoveryOff:"Pas encore créé", newCode:"Créer un nouveau code", confirmNewCode:"Créer un nouveau code ? L'ancien ne fonctionnera plus.",
+    codeTitle:"Code de récupération", codeSub:"Notez-le sur papier ou faites une capture, et gardez-le en lieu sûr.", codeWarn:"Ce code ne sera plus affiché. Qui le possède peut changer le mot de passe gérant.", codeSaved:"J'ai rangé le code en lieu sûr", copy:"Copier le code", copied:"Copié ✓", done:"Terminé",
+    pToday:"Aujourd'hui", p7:"7 jours", p30:"30 jours", pMonth:"Ce mois", range:(a, b) => a === b ? a : `du ${a} au ${b}`,
+    kSales:"Ventes", kPaid:"Payé", kUnpaid:"Non payé", kOrders:"Commandes", kAvg:"Panier moyen", kCancelled:"Annulées", cancelledV:v => `valeur ${v} MRU`,
+    cDaily:"Ventes par jour", cDailySub:"MRU · total des commandes non annulées par jour", cSections:"Ventes par rubrique", cSectionsSub:"MRU",
+    cTop:"Meilleures ventes", cTopSub:"Classées par chiffre d'affaires", thItem:"Article", thQty:"Qté", thSales:"Ventes (MRU)", noSales:"Aucune vente sur cette période.",
+    cHours:"Heures de pointe", cHoursSub:"Nombre de commandes par heure", other:"Autres",
   },
 };
 let L = (() => { try { return localStorage.getItem("coup-admin-lang") === "fr" ? "fr" : "ar"; } catch { return "ar"; } })();
@@ -386,9 +587,10 @@ function applyLang(){
   document.documentElement.lang = L;
   document.documentElement.dir = L === "ar" ? "rtl" : "ltr";
   document.querySelectorAll("[data-t]").forEach(el => el.textContent = t(el.dataset.t));
+  document.querySelectorAll("[data-ph]").forEach(el => el.placeholder = t(el.dataset.ph));
   document.querySelectorAll(".lang button").forEach(b => b.setAttribute("aria-pressed", b.dataset.lang === L));
   $("busy").textContent = t("saving");
-  if (!$("appView").hidden){ renderOrders(); renderArchive(); renderMenu(); renderStatus(); }
+  if (!$("appView").hidden){ renderOrders(); renderArchive(); renderMenu(); renderStatus(); renderSecurity(); renderStats(); }
 }
 document.addEventListener("click", e => {
   const b = e.target.closest(".lang [data-lang]"); if (!b || b.dataset.lang === L) return;
@@ -397,6 +599,8 @@ document.addEventListener("click", e => {
 });
 
 /* ═══ الدخول ═══ */
+let role = null, security = { hasRecovery: true, staffEnabled: false }, pollTimer = null;
+const isOwner = () => role === "owner";
 async function start(){
   let s = { authed: false, configured: true };
   try { s = await (await api("api/login")).json(); } catch {}
@@ -406,11 +610,20 @@ async function start(){
     setTimeout(() => $("pw").focus(), 50);
     return;
   }
+  role = s.role;
+  security = { hasRecovery: !!s.hasRecovery, staffEnabled: !!s.staffEnabled };
+  // العمال: لا يرون إلا الطلبات
+  document.querySelectorAll("[data-owner]").forEach(el => el.hidden = !isOwner());
+  $("nav").style.setProperty("--tabs", isOwner() ? 4 : 1);
+  $("nav").hidden = !isOwner();
+  $("roleBadge").hidden = isOwner();
+  $("statsRow").style.gridTemplateColumns = isOwner() ? "" : "1fr";
   $("loginView").hidden = true; $("appView").hidden = false;
   applyLang();
   show("orders");
-  await Promise.all([loadMenu(), loadOrders()]);
-  setInterval(() => { if (!document.hidden && viewing === "orders" && orderDay === todayDay) loadOrders(true); }, 15000);
+  await Promise.all([isOwner() ? loadMenu() : null, loadOrders()]);
+  clearInterval(pollTimer);
+  pollTimer = setInterval(() => { if (!document.hidden && viewing === "orders" && orderDay === todayDay) loadOrders(true); }, 15000);
 }
 $("loginForm").addEventListener("submit", async e => {
   e.preventDefault();
@@ -418,9 +631,32 @@ $("loginForm").addEventListener("submit", async e => {
   try {
     const r = await api("api/login", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ password: $("pw").value }) });
     if (r.ok){ $("pw").value = ""; await start(); }
-    else $("loginErr").textContent = r.status === 401 ? t("wrongPw") : t("loginFail");
+    else $("loginErr").textContent = r.status === 401 ? t("wrongPw") : r.status === 429 ? t("tooMany") : t("loginFail");
   } catch { $("loginErr").textContent = t("offline"); }
   $("loginBtn").disabled = false;
+});
+
+/* نسيت كلمة السر: رمز الاسترجاع أو المفتاح الرئيسي من Vercel */
+$("forgotBtn").addEventListener("click", () => { $("loginForm").hidden = true; $("recoverForm").hidden = false; $("rKey").focus(); });
+$("backLogin").addEventListener("click", () => { $("recoverForm").hidden = true; $("loginForm").hidden = false; $("pw").focus(); });
+$("recoverForm").addEventListener("submit", async e => {
+  e.preventDefault();
+  const err = $("recoverErr"); err.textContent = "";
+  if ($("rNew").value.length < 6) return err.textContent = t("weakPw");
+  if ($("rNew").value !== $("rNew2").value) return err.textContent = t("pwMismatch");
+  $("recoverBtn").disabled = true;
+  try {
+    const r = await api("api/login", { method: "POST", headers: { "content-type": "application/json" },
+      body: JSON.stringify({ action: "recover", key: $("rKey").value, next: $("rNew").value }) });
+    const d = await r.json().catch(() => ({}));
+    if (r.ok){
+      $("rKey").value = $("rNew").value = $("rNew2").value = "";
+      $("recoverForm").hidden = true; $("loginForm").hidden = false;
+      await start();
+      showCode(d.recoveryCode);
+    } else err.textContent = r.status === 401 ? t("wrongKey") : r.status === 429 ? t("tooMany") : d.error === "weak-password" ? t("weakPw") : t("loginFail");
+  } catch { err.textContent = t("offline"); }
+  $("recoverBtn").disabled = false;
 });
 $("logout").addEventListener("click", async () => { await api("api/login", { method: "DELETE" }).catch(() => {}); location.reload(); });
 function sessionExpired(){ toast(t("expired"), true); setTimeout(() => location.reload(), 1800); return false; }
@@ -431,7 +667,10 @@ function show(v){
   viewing = v;
   document.querySelectorAll("#nav [data-view]").forEach(b => b.setAttribute("aria-selected", b.dataset.view === v));
   $("ordersView").hidden = v !== "orders"; $("archiveView").hidden = v !== "archive";
-  $("menuView").hidden = v !== "menu"; $("settingsView").hidden = v !== "settings";
+  $("menuView").hidden = v !== "menu"; $("settingsView").hidden = v !== "settings"; $("statsView").hidden = v !== "stats";
+  $("recoveryBanner").hidden = !(isOwner() && !security.hasRecovery && (v === "orders" || v === "settings"));
+  if (v === "stats") loadStats();
+  if (v === "settings") renderSecurity();
   if (v === "archive") document.querySelector('#nav [data-view="orders"]').setAttribute("aria-selected", true);
   window.scrollTo(0, 0);
 }
@@ -471,7 +710,7 @@ function renderOrders(freshIds = []){
   $("dayTitle").textContent = isToday ? t("today") : t("dayOf");
   $("dayDate").textContent = orderDay ? fmtDate(orderDay + "T12:00:00Z", { weekday: "long", day: "numeric", month: "long", year: "numeric" }) : "";
   const s = summary || { count: 0, paid: 0, unpaid: 0, byStatus: {} };
-  $("sCount").textContent = s.count; $("sPaid").textContent = s.paid; $("sUnpaid").textContent = s.unpaid;
+  $("sCount").textContent = s.count; $("sPaid").textContent = s.paid ?? "—"; $("sUnpaid").textContent = s.unpaid ?? "—";
   const newCount = isToday ? (s.byStatus.new || 0) : 0;
   $("newDot").hidden = !newCount; $("newDot").textContent = newCount;
   $("filters").innerHTML = [`<button class="f" data-f="all" aria-pressed="${filter === "all"}">${t("all")} · ${orders.length}</button>`]
@@ -698,6 +937,109 @@ async function save(okMsg, quiet){
   } catch { toast(t("notSaved"), true); return false; }
   finally { if (!quiet) $("busy").hidden = true; }
 }
+
+/* ═══════════ الإحصائيات (المالك) ═══════════ */
+let period = "7", stats = null;
+async function loadStats(){
+  try {
+    const r = await api(`api/stats?period=${period}`);
+    if (r.status === 401) return sessionExpired();
+    if (!r.ok) throw 0;
+    stats = await r.json(); renderStats();
+  } catch { toast(t("loadFail"), true); }
+}
+$("periods").addEventListener("click", e => { const b = e.target.closest("[data-p]"); if (b){ period = b.dataset.p; loadStats(); renderStats(); } });
+const shortDay = d => `${+d.slice(8, 10)}/${+d.slice(5, 7)}`; // 13/10
+function columns(el, xEl, data, labelOf, valueOf, titleOf, showValue){
+  const max = Math.max(1, ...data.map(valueOf));
+  el.innerHTML = data.map(d => {
+    const v = valueOf(d), h = Math.round((v / max) * 100);
+    return `<div class="col ${v ? "" : "zero"}" tabindex="0" title="${esc(titleOf(d))}" style="--h:${h}%">
+      ${showValue && v ? `<em>${v}</em>` : ""}<i style="height:${Math.max(h, 1)}%"></i></div>`;
+  }).join("");
+  el.setAttribute("aria-label", data.map(titleOf).join(" · "));
+  xEl.innerHTML = data.map(labelOf).map(x => `<span>${esc(x)}</span>`).join("");
+}
+function renderStats(){
+  document.querySelectorAll("#periods [data-p]").forEach(b => b.setAttribute("aria-pressed", b.dataset.p === period));
+  if (!stats) return;
+  const k = stats.totals;
+  $("statsRange").textContent = t("range", fmtDate(stats.from + "T12:00:00Z", { day: "numeric", month: "long" }), fmtDate(stats.to + "T12:00:00Z", { day: "numeric", month: "long", year: "numeric" }));
+  $("kSales").textContent = k.sales; $("kPaid").textContent = k.paid; $("kUnpaid").textContent = k.unpaid;
+  $("kOrders").textContent = k.orders; $("kAvg").textContent = k.average;
+  $("kCancelled").textContent = k.cancelled; $("kCancelledV").textContent = k.cancelled ? t("cancelledV", k.cancelledValue) : "";
+  // المبيعات اليومية (يُخفى ليوم واحد)
+  $("dailyCard").hidden = stats.daily.length < 2;
+  const many = stats.daily.length > 12;
+  columns($("dailyCols"), $("dailyX"), stats.daily,
+    (d, i) => (!many || i % 5 === 0 || i === stats.daily.length - 1) ? shortDay(d.day) : "",
+    d => d.sales, d => `${shortDay(d.day)}: ${d.sales} MRU · ${d.orders} ${t("kOrders")}`, !many);
+  // حسب القسم
+  const secs = [["drinks", t("secDrinks")], ["food", t("secFood")], ["games", t("secGames")], ["other", t("other")]].filter(([s]) => s !== "other" || stats.sections.other);
+  const smax = Math.max(1, ...secs.map(([s]) => stats.sections[s]));
+  $("sectionBars").innerHTML = secs.map(([s, label]) => `<div class="hbar"><span>${esc(label)}</span>
+    <span class="track"><i style="width:${Math.round(stats.sections[s] / smax * 100)}%"></i></span><b>${stats.sections[s]}</b></div>`).join("");
+  // الأكثر مبيعاً
+  $("topBody").innerHTML = stats.top.length ? stats.top.map((it, i) => `<tr><td>${i + 1}</td><td>${esc(nameOf(it))}</td><td class="n">${it.q}</td><td class="n">${it.sales}</td></tr>`).join("")
+    : `<tr><td colspan="4" class="empty">${t("noSales")}</td></tr>`;
+  // أوقات الذروة: من 8 صباحاً حتى 2 بعد منتصف الليل، أو كل الساعات التي فيها طلبات
+  const hrs = [...Array(24).keys()].filter(h => (h >= 8 || h <= 1) || stats.hours[h]).sort((a, b) => ((a + 16) % 24) - ((b + 16) % 24));
+  const hd = hrs.map(h => ({ h, n: stats.hours[h] }));
+  columns($("hourCols"), $("hourX"), hd, d => (d.h % 3 === 0 ? `${d.h}h` : ""), d => d.n, d => `${String(d.h).padStart(2, "0")}:00 — ${d.n}`, true);
+}
+
+/* ═══════════ الإعدادات: الأمان ═══════════ */
+function renderSecurity(){
+  $("staffState").className = "state " + (security.staffEnabled ? "on" : "off");
+  $("staffState").textContent = security.staffEnabled ? t("staffOn") : t("staffOff");
+  $("staffDisable").hidden = !security.staffEnabled;
+  $("recoveryState").className = "state " + (security.hasRecovery ? "on" : "off");
+  $("recoveryState").textContent = security.hasRecovery ? t("recoveryOn") : t("recoveryOff");
+}
+async function account(body){
+  const r = await api("api/account", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) });
+  if (r.status === 401 && body.action !== "owner-password"){ sessionExpired(); return { ok: false }; }
+  return { ok: r.ok, status: r.status, ...(await r.json().catch(() => ({}))) };
+}
+$("ownerPwForm").addEventListener("submit", async e => {
+  e.preventDefault(); const err = $("opErr"); err.textContent = "";
+  if ($("opNew").value.length < 6) return err.textContent = t("weakPw");
+  if ($("opNew").value !== $("opNew2").value) return err.textContent = t("pwMismatch");
+  const d = await account({ action: "owner-password", current: $("opCurrent").value, next: $("opNew").value });
+  if (d.ok){ $("opCurrent").value = $("opNew").value = $("opNew2").value = ""; toast(t("ownerPwSaved")); }
+  else err.textContent = d.error === "wrong-current" ? t("wrongCurrent") : d.error === "same-as-staff" ? t("sameAsStaff") : d.error === "weak-password" ? t("weakPw") : t("notSaved");
+});
+$("staffPwForm").addEventListener("submit", async e => {
+  e.preventDefault(); const err = $("spErr"); err.textContent = "";
+  if ($("spNew").value.length < 6) return err.textContent = t("weakPw");
+  if ($("spNew").value !== $("spNew2").value) return err.textContent = t("pwMismatch");
+  const d = await account({ action: "staff-password", next: $("spNew").value });
+  if (d.ok){ $("spNew").value = $("spNew2").value = ""; security.staffEnabled = true; renderSecurity(); toast(t("staffSaved")); }
+  else err.textContent = d.error === "same-as-owner" ? t("sameAsOwner") : d.error === "weak-password" ? t("weakPw") : t("notSaved");
+});
+$("staffDisable").addEventListener("click", async () => {
+  if (!confirm(t("confirmDisable"))) return;
+  const d = await account({ action: "staff-disable" });
+  if (d.ok){ security.staffEnabled = false; renderSecurity(); toast(t("staffDisabled")); } else toast(t("notSaved"), true);
+});
+async function createCode(){
+  if (security.hasRecovery && !confirm(t("confirmNewCode"))) return;
+  const d = await account({ action: "recovery-code" });
+  if (d.ok && d.recoveryCode) showCode(d.recoveryCode); else toast(t("notSaved"), true);
+}
+$("newCodeBtn").addEventListener("click", createCode);
+$("bannerBtn").addEventListener("click", createCode);
+
+/* نافذة رمز الاسترجاع: لا تُغلق قبل تأكيد الحفظ */
+function showCode(code){
+  if (!code) return;
+  $("codeText").textContent = code; $("codeSaved").checked = false; $("codeDone").disabled = true;
+  $("codeModal").hidden = false;
+  security.hasRecovery = true; renderSecurity(); $("recoveryBanner").hidden = true;
+}
+$("codeSaved").addEventListener("change", () => { $("codeDone").disabled = !$("codeSaved").checked; });
+$("codeCopy").addEventListener("click", async () => { try { await navigator.clipboard.writeText($("codeText").textContent); toast(t("copied")); } catch {} });
+$("codeDone").addEventListener("click", () => { $("codeModal").hidden = true; $("codeText").textContent = ""; });
 
 /* ═══════════ الإعدادات: رقم واتساب ═══════════ */
 $("waSave").addEventListener("click", async () => {

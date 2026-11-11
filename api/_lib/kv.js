@@ -23,6 +23,22 @@ let mem = null;
 async function db() { if (!mem) mem = JSON.parse(await fs.readFile(FILE(), "utf8").catch(() => "{}")); return mem; }
 async function flush() { await fs.mkdir(LOCAL, { recursive: true }); await fs.writeFile(FILE(), JSON.stringify(mem)); }
 
+export async function get(key) {
+  if (LOCAL) { const d = await db(); return d[key] ?? null; }
+  return r().get(key);
+}
+export async function set(key, value) {
+  if (LOCAL) { const d = await db(); d[key] = value; return flush(); }
+  return r().set(key, value);
+}
+export async function del(key) {
+  if (LOCAL) { const d = await db(); delete d[key]; return flush(); }
+  return r().del(key);
+}
+export function configured() {
+  return !!(LOCAL || ((process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL) && (process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN)));
+}
+
 export async function hget(key, field) {
   if (LOCAL) { const d = await db(); return d[key]?.[field] ?? null; }
   return r().hget(key, field);

@@ -1,12 +1,12 @@
 // POST /api/upload — رفع صورة صنف (لصاحب المقهى فقط). الجسم: ملف الصورة نفسه.
-import { isAuthed, fromPanel, json } from "./_lib/auth.js";
+import { sessionRole, fromPanel, json } from "./_lib/auth.js";
 import { saveImage } from "./_lib/store.js";
 
 const TYPES = new Set(["image/png", "image/jpeg", "image/webp"]);
 const MAX = 6 * 1024 * 1024;
 
 export async function POST(request) {
-  if (!fromPanel(request) || !isAuthed(request)) return json({ error: "unauthorized" }, 401);
+  if (!fromPanel(request) || (await sessionRole(request)) !== "owner") return json({ error: "unauthorized" }, 401); // المالك فقط
   const type = (request.headers.get("content-type") || "").split(";")[0].trim();
   if (!TYPES.has(type)) return json({ error: "bad-type" }, 415);
   const buf = Buffer.from(await request.arrayBuffer());
