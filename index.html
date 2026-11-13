@@ -620,7 +620,7 @@ function orderCode(){
 }
 function resetOrderCode(){ store.set("coup-code", ""); }
 function orderBody(){
-  const t = els.table.value.trim(); if (!t) return null;
+  const t = toLatinDigits(els.table.value.trim()); if (!t) return null;
   const lines = orderLines().map(({ k, item, q }) => ({ id: k, q, name_ar: item.name_ar, name_fr: item.name_fr, price: item.price }));
   return lines.length ? JSON.stringify({ code: orderCode(), table: t, lang, lines }) : null;
 }
@@ -713,9 +713,13 @@ function sentNotice(code, no){
 }
 
 // رقم الطاولة: أرقام فقط، ويُحفظ
-els.table.value = store.get("coup-table") || "";
+const toLatinDigits = s => String(s ?? "")
+  .replace(/[٠-٩]/g, d => String(d.charCodeAt(0) - 0x0660))
+  .replace(/[۰-۹]/g, d => String(d.charCodeAt(0) - 0x06F0));
+els.table.value = toLatinDigits(store.get("coup-table") || "").replace(/[^0-9]/g, "").slice(0, 4);
 els.table.addEventListener("input", () => {
-  els.table.value = els.table.value.replace(/[^0-9٠-٩]/g, "").slice(0, 4);
+  // الأرقام العربية ٠-٩ (والفارسية ۰-۹) تُحوَّل إلى 0-9، لأن الخادم يقرأ 0-9 فقط
+  els.table.value = toLatinDigits(els.table.value).replace(/[^0-9]/g, "").slice(0, 4);
   store.set("coup-table", els.table.value);
   if (els.table.value) tableError(false);
 });

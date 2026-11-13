@@ -16,6 +16,9 @@ const CORS = {
   "access-control-allow-headers": "content-type",
 };
 const parse = v => (typeof v === "string" ? JSON.parse(v) : v);
+const toLatinDigits = s => String(s ?? "")
+  .replace(/[٠-٩]/g, d => String(d.charCodeAt(0) - 0x0660))
+  .replace(/[۰-۹]/g, d => String(d.charCodeAt(0) - 0x06F0));
 // سطر في سجلات Vercel لكل طلب (رمز وطاولة وعدد أصناف فقط، بلا بيانات شخصية)
 const log = (what, info) => console.log(`[orders] ${what} ${JSON.stringify(info)}`);
 
@@ -28,7 +31,8 @@ export async function POST(request) {
     if (await incrWithExpiry(`rl:orders:${ip}`, 600) > 40) { log("rejected", { reason: "too-many" }); return json({ error: "too-many" }, 429, CORS); }
     const body = await request.json();
     const code = String(body.code || "").toUpperCase();
-    const table = String(body.table || "").replace(/[^0-9]/g, "").slice(0, 4);
+    // لوحة المفاتيح العربية تكتب الأرقام هكذا: ٠١٢٣٤٥٦٧٨٩ (والفارسية ۰-۹) ← نحوّلها إلى 0-9
+    const table = toLatinDigits(body.table).replace(/[^0-9]/g, "").slice(0, 4);
     if (!/^[A-Z0-9]{4,8}$/.test(code) || !table) { log("rejected", { reason: !table ? "no-table" : "bad-code", code }); return json({ error: "invalid" }, 400, CORS); }
     if (!Array.isArray(body.lines) || !body.lines.length || body.lines.length > 60) { log("rejected", { reason: "no-lines", code }); return json({ error: "invalid" }, 400, CORS); }
 
